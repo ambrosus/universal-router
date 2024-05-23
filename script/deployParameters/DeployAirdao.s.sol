@@ -7,7 +7,7 @@ import {RouterParameters} from 'contracts/base/RouterImmutables.sol';
 contract DeployAirdao is DeployUniversalRouter {
     function setUp() public override {
         params = RouterParameters({
-            permit2: 0x0000000000000000000000000000000000000000,
+            permit2: 0x1952D57a852C486f7955BfCE28BB1F6E6Cda2E35,
             weth9: 0x00662a0aC35717A1898bEfd243B47e373cFd73f7,
             seaportV1_5: UNSUPPORTED_PROTOCOL,
             seaportV1_4: UNSUPPORTED_PROTOCOL,
