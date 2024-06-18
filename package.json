@@ -1,5 +1,5 @@
 {
-  "name": "@uniswap/universal-router",
+  "name": "@airdao/universal-router",
   "description": "Smart contracts for Universal Router",
   "license": "GPL-2.0-or-later",
   "publishConfig": {
@@ -14,7 +14,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Uniswap/universal-router"
+    "url": "https://github.com/airdao/universal-router"
   },
   "files": [
     "contracts/base",
