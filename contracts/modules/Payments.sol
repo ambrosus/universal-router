@@ -15,7 +15,7 @@ abstract contract Payments is RouterImmutables {
     using SafeTransferLib for address;
 
     error InsufficientToken();
-    error InsufficientETH();
+    error InsufficientAMB();
     error InvalidBips();
     error InvalidSpender();
 
@@ -26,7 +26,7 @@ abstract contract Payments is RouterImmutables {
     /// @param recipient The address that will receive the payment
     /// @param value The amount to pay
     function pay(address token, address recipient, uint256 value) internal {
-        if (token == Constants.ETH) {
+        if (token == Constants.AMB) {
             recipient.safeTransferETH(value);
         } else {
             if (value == Constants.CONTRACT_BALANCE) {
@@ -52,13 +52,13 @@ abstract contract Payments is RouterImmutables {
         token.safeApprove(spenderAddress, type(uint256).max);
     }
 
-    /// @notice Pays a proportion of the contract's ETH or ERC20 to a recipient
-    /// @param token The token to pay (can be ETH using Constants.ETH)
+    /// @notice Pays a proportion of the contract's AMB or ERC20 to a recipient
+    /// @param token The token to pay (can be AMB using Constants.AMB)
     /// @param recipient The address that will receive payment
     /// @param bips Portion in bips of whole balance of the contract
     function payPortion(address token, address recipient, uint256 bips) internal {
         if (bips == 0 || bips > FEE_BIPS_BASE) revert InvalidBips();
-        if (token == Constants.ETH) {
+        if (token == Constants.AMB) {
             uint256 balance = address(this).balance;
             uint256 amount = (balance * bips) / FEE_BIPS_BASE;
             recipient.safeTransferETH(amount);
@@ -69,15 +69,15 @@ abstract contract Payments is RouterImmutables {
         }
     }
 
-    /// @notice Sweeps all of the contract's ERC20 or ETH to an address
-    /// @param token The token to sweep (can be ETH using Constants.ETH)
+    /// @notice Sweeps all of the contract's ERC20 or AMB to an address
+    /// @param token The token to sweep (can be AMB using Constants.AMB)
     /// @param recipient The address that will receive payment
     /// @param amountMinimum The minimum desired amount
     function sweep(address token, address recipient, uint256 amountMinimum) internal {
         uint256 balance;
-        if (token == Constants.ETH) {
+        if (token == Constants.AMB) {
             balance = address(this).balance;
-            if (balance < amountMinimum) revert InsufficientETH();
+            if (balance < amountMinimum) revert InsufficientAMB();
             if (balance > 0) recipient.safeTransferETH(balance);
         } else {
             balance = ERC20(token).balanceOf(address(this));
@@ -105,33 +105,33 @@ abstract contract Payments is RouterImmutables {
         ERC1155(token).safeTransferFrom(address(this), recipient, id, balance, bytes(''));
     }
 
-    /// @notice Wraps an amount of ETH into WETH
-    /// @param recipient The recipient of the WETH
+    /// @notice Wraps an amount of AMB into SAMB
+    /// @param recipient The recipient of the SAMB
     /// @param amount The amount to wrap (can be CONTRACT_BALANCE)
-    function wrapETH(address recipient, uint256 amount) internal {
+    function wrapAMB(address recipient, uint256 amount) internal {
         if (amount == Constants.CONTRACT_BALANCE) {
             amount = address(this).balance;
         } else if (amount > address(this).balance) {
-            revert InsufficientETH();
+            revert InsufficientAMB();
         }
         if (amount > 0) {
-            WETH9.deposit{value: amount}();
+            SAMB.deposit{value: amount}();
             if (recipient != address(this)) {
-                WETH9.transfer(recipient, amount);
+                SAMB.transfer(recipient, amount);
             }
         }
     }
 
-    /// @notice Unwraps all of the contract's WETH into ETH
-    /// @param recipient The recipient of the ETH
-    /// @param amountMinimum The minimum amount of ETH desired
-    function unwrapWETH9(address recipient, uint256 amountMinimum) internal {
-        uint256 value = WETH9.balanceOf(address(this));
+    /// @notice Unwraps all of the contract's SAMB into AMB
+    /// @param recipient The recipient of the AMB
+    /// @param amountMinimum The minimum amount of AMB desired
+    function unwrapSAMB(address recipient, uint256 amountMinimum) internal {
+        uint256 value = SAMB.balanceOf(address(this));
         if (value < amountMinimum) {
-            revert InsufficientETH();
+            revert InsufficientAMB();
         }
         if (value > 0) {
-            WETH9.withdraw(value);
+            SAMB.withdraw(value);
             if (recipient != address(this)) {
                 recipient.safeTransferETH(value);
             }

@@ -14,7 +14,8 @@ import {
   TOWNSTAR_ADDRESS,
   MILADY_ADDRESS,
 } from './constants'
-import { abi as V2_PAIR_ABI } from '../../../artifacts/@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol/IUniswapV2Pair.json'
+// TODO: use imports from @airdao scoped contracts
+import { abi as CLASSIC_PAIR_ABI } from '@airdao/astra-contracts/artifacts/contracts/core/interfaces/IAstraPair.sol/IAstraPair.json'
 import { Currency, Token, WETH9 } from '@uniswap/sdk-core'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
@@ -24,13 +25,17 @@ import { MethodParameters } from '@uniswap/v3-sdk'
 import { Pair } from '@uniswap/v2-sdk'
 const { ethers } = hre
 
-export const WETH = WETH9[1]
-export const DAI = new Token(1, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'Dai Stablecoin')
-export const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC', 'USD//C')
-export const USDT = new Token(1, '0xdAC17F958D2ee523a2206206994597C13D831ec7', 6, 'USDT', 'Tether USD')
-export const GALA = new Token(1, '0x15D4c048F83bd7e37d49eA4C83a07267Ec4203dA', 8, 'GALA', 'Gala')
-export const SWAP_ROUTER_V2 = '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45'
-export const V2_FACTORY = 0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f
+const SAMBList = {
+  16718: new Token(16718, '0x2b2d892C3fe2b4113dd7aC0D2c1882AF202FB28F', 18, 'SAMB', 'SAMB'),
+}
+
+export const SAMB = SAMBList[16718]
+export const BOND = new Token(16718, '0x096B5914C95C34Df19500DAff77470C845EC749D', 18, 'BOND', 'Bond coin')
+export const USDC = new Token(16718, '0xFF9F502976E7bD2b4901aD7Dd1131Bb81E5567de', 18, 'USDC', 'USD//C')
+export const AST = new Token(16718, '0xE874AeD7D9827b7d886FB19719730c7F87204153', 18, 'AST', 'Astra Token')
+export const KOS = new Token(16718, '0xC15891E4dE2793726c20F53EcA6FB6319968E5F3', 18, 'KOS', 'Kosmos Token')
+export const SWAP_ROUTER_CLASSIC = '0xf7237C595425b49Eaeb3Dc930644de6DCa09c3C4'
+export const CLASSIC_FACTORY = 0x2b6852cedef193ece9814ee99be4a4df7f463557
 
 export const approveSwapRouter02 = async (
   alice: SignerWithAddress,
@@ -41,11 +46,11 @@ export const approveSwapRouter02 = async (
     const aliceTokenIn: ERC20 = ERC20__factory.connect(currency.address, alice)
 
     if (currency.symbol == 'USDT') {
-      await (await aliceTokenIn.approve(overrideSwapRouter02Address ?? SWAP_ROUTER_V2, 0)).wait()
+      await(await aliceTokenIn.approve(overrideSwapRouter02Address ?? SWAP_ROUTER_CLASSIC, 0)).wait()
     }
 
-    return await (
-      await aliceTokenIn.approve(overrideSwapRouter02Address ?? SWAP_ROUTER_V2, constants.MaxUint256)
+    return await(
+      await aliceTokenIn.approve(overrideSwapRouter02Address ?? SWAP_ROUTER_CLASSIC, constants.MaxUint256)
     ).wait()
   }
 }
@@ -57,7 +62,7 @@ type Reserves = {
 
 export const getV2PoolReserves = async (alice: SignerWithAddress, tokenA: Token, tokenB: Token): Promise<Reserves> => {
   const contractAddress = Pair.getAddress(tokenA, tokenB)
-  const contract = new ethers.Contract(contractAddress, V2_PAIR_ABI, alice)
+  const contract = new ethers.Contract(contractAddress, CLASSIC_PAIR_ABI, alice)
 
   const { reserve0, reserve1 } = await contract.getReserves()
   return { reserve0, reserve1 }
@@ -74,7 +79,7 @@ export const approveAndExecuteSwapRouter02 = async (
 
   const transaction = {
     data: methodParameters.calldata,
-    to: SWAP_ROUTER_V2,
+    to: SWAP_ROUTER_CLASSIC,
     value: BigNumber.from(methodParameters.value),
     from: alice.address,
     gasPrice: BigNumber.from(2000000000000),
@@ -91,7 +96,7 @@ export const executeSwapRouter02Swap = async (
 ): Promise<TransactionResponse> => {
   const transaction = {
     data: methodParameters.calldata,
-    to: SWAP_ROUTER_V2,
+    to: SWAP_ROUTER_CLASSIC,
     value: BigNumber.from(methodParameters.value),
     from: alice.address,
     gasPrice: BigNumber.from(2000000000000),
@@ -108,7 +113,7 @@ export const resetFork = async (block: number = 15360000) => {
     params: [
       {
         forking: {
-          jsonRpcUrl: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+          jsonRpcUrl: `https://network-archive.ambrosus.io`,
           blockNumber: block,
         },
       },

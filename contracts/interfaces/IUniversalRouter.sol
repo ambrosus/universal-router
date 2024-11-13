@@ -9,8 +9,8 @@ interface IUniversalRouter is IRewardsCollector, IERC721Receiver, IERC1155Receiv
     /// @notice Thrown when a required command has failed
     error ExecutionFailed(uint256 commandIndex, bytes message);
 
-    /// @notice Thrown when attempting to send ETH directly to the contract
-    error ETHNotAccepted();
+    /// @notice Thrown when attempting to send AMB directly to the contract
+    error AMBNotAccepted();
 
     /// @notice Thrown when executing commands with an expired deadline
     error TransactionDeadlinePassed();

@@ -54,6 +54,6 @@ contract UniversalRouter is RouterImmutables, IUniversalRouter, Dispatcher, Rewa
         return command & Commands.FLAG_ALLOW_REVERT == 0;
     }
 
-    /// @notice To receive ETH from WETH and NFT protocols
+    /// @notice To receive AMB from SAMB and NFT protocols
     receive() external payable {}
 }

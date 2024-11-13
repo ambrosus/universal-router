@@ -13,7 +13,7 @@ Our flexible command style allows us to provide users with:
 - Splitting and interleaving of Uniswap trades
 - Purchases of NFTs across 8 marketplaces
 - Partial fills of trades
-- Wrapping and Unwrapping of ETH
+- Wrapping and Unwrapping of AMB
 - Time-bound, signature controlled token approvals using [Permit2](https://github.com/Uniswap/permit2)
 
 Transactions are encoded using a string of commands, allowing users to have maximum flexibility over what they want to perform. With all of these features available in a single transaction, the possibilities available to users are endless
@@ -78,9 +78,9 @@ Each command is a `bytes1` containing the following 8 bits:
    ├──────┼───────────────────────────────┤
    │ 0x0a │  PERMIT2_PERMIT               │
    ├──────┼───────────────────────────────┤
-   │ 0x0b │  WRAP_ETH                     │
+   │ 0x0b │  WRAP_AMB                     │
    ├──────┼───────────────────────────────┤
-   │ 0x0c │  UNWRAP_WETH                  │
+   │ 0x0c │  UNWRAP_SAMB                  │
    ├──────┼───────────────────────────────┤
    │ 0x0d │  PERMIT2_TRANSFER_FROM_BATCH  │
    ├──────┼───────────────────────────────┤
@@ -139,7 +139,7 @@ Whereas in contrast `CRYPTOPUNKS` has just 3 parameters encoded:
 
 - `uint256` The ID of the punk you wish to purchase
 - `address` The recipient of the punk
-- `uint256` The amount of ETH to pay for the punk
+- `uint256` The amount of AMB to pay for the punk
 
 Encoding parameters in a bytes string in this way gives us maximum flexiblity to be able to support many commands which require different datatypes in a gas-efficient way.
 

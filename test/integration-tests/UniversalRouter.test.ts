@@ -1,10 +1,19 @@
-import { UniversalRouter, Permit2, ERC20, IWETH9, MockLooksRareRewardsDistributor, ERC721 } from '../../typechain'
+
+import {
+  UniversalRouter,
+  Permit2,
+  ERC20,
+  ISAMB,
+  MockLooksRareRewardsDistributor,
+  ERC721,
+  ERC1155,
+} from '../../typechain'
 import { BigNumber, BigNumberish } from 'ethers'
 import { Pair } from '@uniswap/v2-sdk'
 import { expect } from './shared/expect'
 import { abi as ROUTER_ABI } from '../../artifacts/contracts/UniversalRouter.sol/UniversalRouter.json'
 import { abi as TOKEN_ABI } from '../../artifacts/solmate/src/tokens/ERC20.sol/ERC20.json'
-import { abi as WETH_ABI } from '../../artifacts/contracts/interfaces/external/IWETH9.sol/IWETH9.json'
+import { abi as SAMB_ABI } from '../../artifacts/contracts/interfaces/external/ISAMB.sol/ISAMB.json'
 
 import NFTX_ZAP_ABI from './shared/abis/NFTXZap.json'
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter'
@@ -17,7 +26,7 @@ import {
   SOURCE_MSG_SENDER,
   MAX_UINT160,
   MAX_UINT,
-  ETH_ADDRESS,
+  AMB_ADDRESS,
   NFTX_MILADY_VAULT_ID,
 } from './shared/constants'
 import {
@@ -29,7 +38,7 @@ import {
   seaportV1_4Orders,
   seaportV1_4Interface,
 } from './shared/protocolHelpers/seaport'
-import { resetFork, WETH, DAI, COVEN_721, MILADY_721 } from './shared/mainnetForkHelpers'
+import { resetFork, SAMB, BOND, MILADY_721, COVEN_721 } from './shared/mainnetForkHelpers'
 import { CommandType, RoutePlanner } from './shared/planner'
 import { makePair } from './shared/swapRouter02Helpers'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
@@ -46,18 +55,23 @@ describe('UniversalRouter', () => {
   let router: UniversalRouter
   let permit2: Permit2
   let daiContract: ERC20
-  let wethContract: IWETH9
+  let wethContract: ISAMB
   let mockLooksRareToken: ERC20
   let mockLooksRareRewardsDistributor: MockLooksRareRewardsDistributor
-  let pair_DAI_WETH: Pair
+  let pair_BOND_SAMB: Pair
   let cryptoCovens: ERC721
+
 
   beforeEach(async () => {
     await resetFork()
-    alice = await ethers.getSigner(ALICE_ADDRESS)
+    alice = await ethers.getSigner(ALICE_ADDRESS) 
     await hre.network.provider.request({
       method: 'hardhat_impersonateAccount',
       params: [ALICE_ADDRESS],
+    })
+    await hre.network.provider.request({
+      method: 'hardhat_setBalance',
+      params: [ALICE_ADDRESS, BigNumber.from(1_000_000).mul(BigNumber.from(10).pow(18))._hex],
     })
 
     // mock rewards contracts
@@ -68,9 +82,9 @@ describe('UniversalRouter', () => {
       ROUTER_REWARDS_DISTRIBUTOR,
       mockLooksRareToken.address
     )) as MockLooksRareRewardsDistributor
-    daiContract = new ethers.Contract(DAI.address, TOKEN_ABI, alice) as ERC20
-    wethContract = new ethers.Contract(WETH.address, WETH_ABI, alice) as IWETH9
-    pair_DAI_WETH = await makePair(alice, DAI, WETH)
+    daiContract = new ethers.Contract(BOND.address, TOKEN_ABI, alice) as ERC20
+    wethContract = new ethers.Contract(SAMB.address, SAMB_ABI, alice) as ISAMB
+    pair_BOND_SAMB = await makePair(alice, BOND, SAMB)
     permit2 = (await deployPermit2()).connect(alice) as Permit2
     router = (
       await deployUniversalRouter(permit2, mockLooksRareRewardsDistributor.address, mockLooksRareToken.address)
@@ -86,16 +100,16 @@ describe('UniversalRouter', () => {
       planner = new RoutePlanner()
       await daiContract.approve(permit2.address, MAX_UINT)
       await wethContract.approve(permit2.address, MAX_UINT)
-      await permit2.approve(DAI.address, router.address, MAX_UINT160, DEADLINE)
-      await permit2.approve(WETH.address, router.address, MAX_UINT160, DEADLINE)
+      await permit2.approve(BOND.address, router.address, MAX_UINT160, DEADLINE)
+      await permit2.approve(SAMB.address, router.address, MAX_UINT160, DEADLINE)
     })
 
     it('reverts if block.timestamp exceeds the deadline', async () => {
-      planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [
+      planner.addCommand(CommandType.CLASSIC_SWAP_EXACT_IN, [
         alice.address,
         1,
         1,
-        [DAI.address, WETH.address],
+        [BOND.address, SAMB.address],
         SOURCE_MSG_SENDER,
       ])
       const invalidDeadline = 10
@@ -117,8 +131,8 @@ describe('UniversalRouter', () => {
 
     it('reverts for an invalid command at index 1', async () => {
       planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [
-        DAI.address,
-        pair_DAI_WETH.liquidityToken.address,
+        BOND.address,
+        pair_BOND_SAMB.liquidityToken.address,
         expandTo18DecimalsBN(1),
       ])
       let commands = planner.commands
@@ -134,8 +148,8 @@ describe('UniversalRouter', () => {
 
     it('reverts if paying a portion over 100% of contract balance', async () => {
       await daiContract.transfer(router.address, expandTo18DecimalsBN(1))
-      planner.addCommand(CommandType.PAY_PORTION, [WETH.address, alice.address, 11_000])
-      planner.addCommand(CommandType.SWEEP, [WETH.address, alice.address, 1])
+      planner.addCommand(CommandType.PAY_PORTION, [SAMB.address, alice.address, 11_000])
+      planner.addCommand(CommandType.SWEEP, [SAMB.address, alice.address, 1])
       const { commands, inputs } = planner
       await expect(router['execute(bytes,bytes[])'](commands, inputs)).to.be.revertedWithCustomError(
         router,
@@ -155,7 +169,7 @@ describe('UniversalRouter', () => {
         )
       ).connect(alice) as UniversalRouter
 
-      planner.addCommand(CommandType.SWEEP, [ETH_ADDRESS, alice.address, 0])
+      planner.addCommand(CommandType.SWEEP, [AMB_ADDRESS, alice.address, 0])
       let { commands, inputs } = planner
 
       const sweepCalldata = routerInterface.encodeFunctionData('execute(bytes,bytes[])', [commands, inputs])
@@ -182,7 +196,7 @@ describe('UniversalRouter', () => {
         ;({ advancedOrder, value } = getAdvancedOrderParams(seaportOrders[0]))
       })
 
-      it('completes a trade for ERC20 --> ETH --> Seaport NFT', async () => {
+      it('completes a trade for ERC20 --> AMB --> Seaport NFT', async () => {
         const maxAmountIn = expandTo18DecimalsBN(100_000)
         const calldata = seaportInterface.encodeFunctionData('fulfillAdvancedOrder', [
           advancedOrder,
@@ -191,14 +205,14 @@ describe('UniversalRouter', () => {
           alice.address,
         ])
 
-        planner.addCommand(CommandType.V2_SWAP_EXACT_OUT, [
+        planner.addCommand(CommandType.CLASSIC_SWAP_EXACT_OUT, [
           ADDRESS_THIS,
           value,
           maxAmountIn,
-          [DAI.address, WETH.address],
+          [BOND.address, SAMB.address],
           SOURCE_MSG_SENDER,
         ])
-        planner.addCommand(CommandType.UNWRAP_WETH, [ADDRESS_THIS, value])
+        planner.addCommand(CommandType.UNWRAP_SAMB, [ADDRESS_THIS, value])
         planner.addCommand(CommandType.SEAPORT_V1_5, [value.toString(), calldata])
         const { commands, inputs } = planner
         const covenBalanceBefore = await cryptoCovens.balanceOf(alice.address)
@@ -207,7 +221,7 @@ describe('UniversalRouter', () => {
         expect(covenBalanceAfter.sub(covenBalanceBefore)).to.eq(1)
       })
 
-      it('completes a trade for WETH --> ETH --> Seaport NFT', async () => {
+      it('completes a trade for SAMB --> AMB --> Seaport NFT', async () => {
         const calldata = seaportInterface.encodeFunctionData('fulfillAdvancedOrder', [
           advancedOrder,
           [],
@@ -215,8 +229,8 @@ describe('UniversalRouter', () => {
           alice.address,
         ])
 
-        planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [WETH.address, ADDRESS_THIS, value])
-        planner.addCommand(CommandType.UNWRAP_WETH, [ADDRESS_THIS, value])
+        planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [SAMB.address, ADDRESS_THIS, value])
+        planner.addCommand(CommandType.UNWRAP_SAMB, [ADDRESS_THIS, value])
         planner.addCommand(CommandType.SEAPORT_V1_5, [value.toString(), calldata])
 
         const { commands, inputs } = planner
@@ -267,6 +281,10 @@ describe('UniversalRouter newer block', () => {
     await hre.network.provider.request({
       method: 'hardhat_impersonateAccount',
       params: [ALICE_ADDRESS],
+    })
+    await hre.network.provider.request({
+      method: 'hardhat_setBalance',
+      params: [ALICE_ADDRESS, BigNumber.from(1_000_000).mul(BigNumber.from(10).pow(18))._hex],
     })
 
     // mock rewards contracts

@@ -38,7 +38,7 @@ abstract contract DeployUniversalRouter is Script {
 
         params = RouterParameters({
             permit2: mapUnsupported(params.permit2),
-            weth9: mapUnsupported(params.weth9),
+            samb: mapUnsupported(params.samb),
             seaportV1_5: mapUnsupported(params.seaportV1_5),
             seaportV1_4: mapUnsupported(params.seaportV1_4),
             openseaConduit: mapUnsupported(params.openseaConduit),
@@ -53,8 +53,8 @@ abstract contract DeployUniversalRouter is Script {
             routerRewardsDistributor: mapUnsupported(params.routerRewardsDistributor),
             looksRareRewardsDistributor: mapUnsupported(params.looksRareRewardsDistributor),
             looksRareToken: mapUnsupported(params.looksRareToken),
-            v2Factory: mapUnsupported(params.v2Factory),
-            v3Factory: mapUnsupported(params.v3Factory),
+            classicFactory: mapUnsupported(params.classicFactory),
+            clFactory: mapUnsupported(params.clFactory),
             pairInitCodeHash: params.pairInitCodeHash,
             poolInitCodeHash: params.poolInitCodeHash
         });
@@ -68,7 +68,7 @@ abstract contract DeployUniversalRouter is Script {
 
     function logParams() internal view {
         console2.log('permit2:', params.permit2);
-        console2.log('weth9:', params.weth9);
+        console2.log('weth9:', params.samb);
         console2.log('seaportV1_5:', params.seaportV1_5);
         console2.log('seaportV1_4:', params.seaportV1_4);
         console2.log('openseaConduit:', params.openseaConduit);
@@ -83,8 +83,8 @@ abstract contract DeployUniversalRouter is Script {
         console2.log('routerRewardsDistributor:', params.routerRewardsDistributor);
         console2.log('looksRareRewardsDistributor:', params.looksRareRewardsDistributor);
         console2.log('looksRareToken:', params.looksRareToken);
-        console2.log('v2Factory:', params.v2Factory);
-        console2.log('v3Factory:', params.v3Factory);
+        console2.log('v2Factory:', params.classicFactory);
+        console2.log('v3Factory:', params.clFactory);
     }
 
     function mapUnsupported(address protocol) internal view returns (address) {

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.17;
 
-import {V2SwapRouter} from '../modules/uniswap/v2/V2SwapRouter.sol';
-import {V3SwapRouter} from '../modules/uniswap/v3/V3SwapRouter.sol';
-import {BytesLib} from '../modules/uniswap/v3/BytesLib.sol';
+import {ClassicSwapRouter} from '../modules/astra/classic/ClassicSwapRouter.sol';
+import {CLSwapRouter} from '../modules/astra/cl/CLSwapRouter.sol';
+import {BytesLib} from '../modules/astra/cl/BytesLib.sol';
 import {Payments} from '../modules/Payments.sol';
 import {RouterImmutables} from '../base/RouterImmutables.sol';
 import {Callbacks} from '../base/Callbacks.sol';
@@ -17,7 +17,7 @@ import {ICryptoPunksMarket} from '../interfaces/external/ICryptoPunksMarket.sol'
 
 /// @title Decodes and Executes Commands
 /// @notice Called by the UniversalRouter contract to efficiently decode and execute a singular command
-abstract contract Dispatcher is Payments, V2SwapRouter, V3SwapRouter, Callbacks, LockAndMsgSender {
+abstract contract Dispatcher is Payments, ClassicSwapRouter, CLSwapRouter, Callbacks, LockAndMsgSender {
     using BytesLib for bytes;
 
     error InvalidCommandType(uint256 commandType);
@@ -41,7 +41,7 @@ abstract contract Dispatcher is Payments, V2SwapRouter, V3SwapRouter, Callbacks,
             if (command < Commands.SECOND_IF_BOUNDARY) {
                 // 0x00 <= command < 0x08
                 if (command < Commands.FIRST_IF_BOUNDARY) {
-                    if (command == Commands.V3_SWAP_EXACT_IN) {
+                    if (command == Commands.CL_SWAP_EXACT_IN) {
                         // equivalent: abi.decode(inputs, (address, uint256, uint256, bytes, bool))
                         address recipient;
                         uint256 amountIn;
@@ -56,8 +56,8 @@ abstract contract Dispatcher is Payments, V2SwapRouter, V3SwapRouter, Callbacks,
                         }
                         bytes calldata path = inputs.toBytes(3);
                         address payer = payerIsUser ? lockedBy : address(this);
-                        v3SwapExactInput(map(recipient), amountIn, amountOutMin, path, payer);
-                    } else if (command == Commands.V3_SWAP_EXACT_OUT) {
+                        clSwapExactInput(map(recipient), amountIn, amountOutMin, path, payer);
+                    } else if (command == Commands.CL_SWAP_EXACT_OUT) {
                         // equivalent: abi.decode(inputs, (address, uint256, uint256, bytes, bool))
                         address recipient;
                         uint256 amountOut;
@@ -72,7 +72,7 @@ abstract contract Dispatcher is Payments, V2SwapRouter, V3SwapRouter, Callbacks,
                         }
                         bytes calldata path = inputs.toBytes(3);
                         address payer = payerIsUser ? lockedBy : address(this);
-                        v3SwapExactOutput(map(recipient), amountOut, amountInMax, path, payer);
+                        clSwapExactOutput(map(recipient), amountOut, amountInMax, path, payer);
                     } else if (command == Commands.PERMIT2_TRANSFER_FROM) {
                         // equivalent: abi.decode(inputs, (address, address, uint160))
                         address token;
@@ -128,7 +128,7 @@ abstract contract Dispatcher is Payments, V2SwapRouter, V3SwapRouter, Callbacks,
                     }
                     // 0x08 <= command < 0x10
                 } else {
-                    if (command == Commands.V2_SWAP_EXACT_IN) {
+                    if (command == Commands.CLASSIC_SWAP_EXACT_IN) {
                         // equivalent: abi.decode(inputs, (address, uint256, uint256, bytes, bool))
                         address recipient;
                         uint256 amountIn;
@@ -144,7 +144,7 @@ abstract contract Dispatcher is Payments, V2SwapRouter, V3SwapRouter, Callbacks,
                         address[] calldata path = inputs.toAddressArray(3);
                         address payer = payerIsUser ? lockedBy : address(this);
                         v2SwapExactInput(map(recipient), amountIn, amountOutMin, path, payer);
-                    } else if (command == Commands.V2_SWAP_EXACT_OUT) {
+                    } else if (command == Commands.CLASSIC_SWAP_EXACT_OUT) {
                         // equivalent: abi.decode(inputs, (address, uint256, uint256, bytes, bool))
                         address recipient;
                         uint256 amountOut;
@@ -168,7 +168,7 @@ abstract contract Dispatcher is Payments, V2SwapRouter, V3SwapRouter, Callbacks,
                         }
                         bytes calldata data = inputs.toBytes(6); // PermitSingle takes first 6 slots (0..5)
                         PERMIT2.permit(lockedBy, permitSingle, data);
-                    } else if (command == Commands.WRAP_ETH) {
+                    } else if (command == Commands.WRAP_AMB) {
                         // equivalent: abi.decode(inputs, (address, uint256))
                         address recipient;
                         uint256 amountMin;
@@ -176,8 +176,8 @@ abstract contract Dispatcher is Payments, V2SwapRouter, V3SwapRouter, Callbacks,
                             recipient := calldataload(inputs.offset)
                             amountMin := calldataload(add(inputs.offset, 0x20))
                         }
-                        Payments.wrapETH(map(recipient), amountMin);
-                    } else if (command == Commands.UNWRAP_WETH) {
+                        Payments.wrapAMB(map(recipient), amountMin);
+                    } else if (command == Commands.UNWRAP_SAMB) {
                         // equivalent: abi.decode(inputs, (address, uint256))
                         address recipient;
                         uint256 amountMin;
@@ -185,7 +185,7 @@ abstract contract Dispatcher is Payments, V2SwapRouter, V3SwapRouter, Callbacks,
                             recipient := calldataload(inputs.offset)
                             amountMin := calldataload(add(inputs.offset, 0x20))
                         }
-                        Payments.unwrapWETH9(map(recipient), amountMin);
+                        Payments.unwrapSAMB(map(recipient), amountMin);
                     } else if (command == Commands.PERMIT2_TRANSFER_FROM_BATCH) {
                         (IAllowanceTransfer.AllowanceTransferDetails[] memory batchDetails) =
                             abi.decode(inputs, (IAllowanceTransfer.AllowanceTransferDetails[]));

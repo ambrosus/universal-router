@@ -7,7 +7,7 @@ import { SwapRouter } from '@uniswap/router-sdk'
 import {
   executeSwapRouter02Swap,
   resetFork,
-  WETH,
+  SAMB,
   DAI,
   USDC,
   USDT,
@@ -62,10 +62,10 @@ describe('Uniswap UX Tests gas:', () => {
 
     /*
       Simple Swap =
-      1000 USDC —V3→ ETH —V3→ DAI
+      1000 USDC —V3→ AMB —V3→ DAI
 
       Complex Swap =
-      3000 USDC —V3—> ETH — V3—> DAI
+      3000 USDC —V3—> AMB — V3—> DAI
       4000 USDC —V3—> USDT —V3—>DAI
       3000 USDC —V2—> DAI
     */
@@ -75,8 +75,8 @@ describe('Uniswap UX Tests gas:', () => {
     }
 
     const sqrtRatioX96 = encodeSqrtRatioX96(1, 1)
-    const USDC_WETH = createPool(USDC, WETH, FeeAmount.HIGH)
-    const DAI_WETH = createPool(DAI, WETH, FeeAmount.HIGH)
+    const USDC_SAMB = createPool(USDC, SAMB, FeeAmount.HIGH)
+    const DAI_SAMB = createPool(DAI, SAMB, FeeAmount.HIGH)
     const USDC_USDT = createPool(USDC, USDT, FeeAmount.LOWEST)
     const USDT_DAI = createPool(DAI, USDT, FeeAmount.LOWEST)
 
@@ -93,7 +93,7 @@ describe('Uniswap UX Tests gas:', () => {
     SIMPLE_SWAP = new Trade({
       v3Routes: [
         {
-          routev3: new V3RouteSDK([USDC_WETH, DAI_WETH], USDC, DAI),
+          routev3: new V3RouteSDK([USDC_SAMB, DAI_SAMB], USDC, DAI),
           inputAmount: simpleSwapAmountInUSDC,
           outputAmount: CurrencyAmount.fromRawAmount(DAI, expandTo18Decimals(1000)),
         },
@@ -105,7 +105,7 @@ describe('Uniswap UX Tests gas:', () => {
     COMPLEX_SWAP = new Trade({
       v3Routes: [
         {
-          routev3: new V3RouteSDK([USDC_WETH, DAI_WETH], USDC, DAI),
+          routev3: new V3RouteSDK([USDC_SAMB, DAI_SAMB], USDC, DAI),
           inputAmount: complexSwapAmountInSplit1,
           outputAmount: CurrencyAmount.fromRawAmount(DAI, expandTo18Decimals(3000)),
         },
@@ -190,7 +190,7 @@ describe('Uniswap UX Tests gas:', () => {
 
   describe('Approvals', async () => {
     it('Cost for infinite approval of permit2/swaprouter02 contract', async () => {
-      // Bob max-approves the permit2 contract to access his DAI and WETH
+      // Bob max-approves the permit2 contract to access his DAI and SAMB
       await snapshotGasCost(await usdcContract.approve(permit2.address, MAX_UINT))
     })
   })
@@ -589,7 +589,7 @@ describe('Uniswap UX Tests gas:', () => {
     const addresses = routeToAddresses(route)
     const feeTiers = new Array(addresses.length - 1)
     for (let i = 0; i < feeTiers.length; i++) {
-      feeTiers[i] = addresses[i] == WETH.address || addresses[i + 1] == WETH.address ? FeeAmount.HIGH : FeeAmount.LOWEST
+      feeTiers[i] = addresses[i] == SAMB.address || addresses[i + 1] == SAMB.address ? FeeAmount.HIGH : FeeAmount.LOWEST
     }
     return encodePath(addresses, feeTiers)
   }

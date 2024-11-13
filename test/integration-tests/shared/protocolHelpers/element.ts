@@ -23,7 +23,7 @@ export interface Fee {
   feeData: string
 }
 
-export const EXAMPLE_ETH_SELL_ORDER: NFTSellOrder = {
+export const EXAMPLE_AMB_SELL_ORDER: NFTSellOrder = {
   maker: '0xABd6a19345943dD175026Cdb52902FD3392a3262',
   taker: '0x75B6568025f463a98fB01082eEb6dCe04efA3Ae4',
   expiry: '7199994275163324196',
@@ -35,7 +35,7 @@ export const EXAMPLE_ETH_SELL_ORDER: NFTSellOrder = {
   nftId: '998',
 }
 
-export const EXAMPLE_ETH_SELL_ORDER_SIG: ElementOrderSignature = {
+export const EXAMPLE_AMB_SELL_ORDER_SIG: ElementOrderSignature = {
   signatureType: 0,
   v: 27,
   r: '0x59ceb2bc0e21029209e6cfa872b1224631b01da3e19d25fad9b929b8be4e6f60',

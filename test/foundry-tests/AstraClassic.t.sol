@@ -4,8 +4,8 @@ pragma solidity ^0.8.15;
 import 'forge-std/Test.sol';
 import {Permit2} from 'permit2/src/Permit2.sol';
 import {ERC20} from 'solmate/src/tokens/ERC20.sol';
-import {IUniswapV2Factory} from '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
-import {IUniswapV2Pair} from '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
+import {IAstraFactory} from '@airdao/astra-contracts/contracts/core/interfaces/IAstraFactory.sol';
+import {IAstraPair} from '@airdao/astra-contracts/contracts/core/interfaces/IAstraPair.sol';
 import {UniversalRouter} from '../../contracts/UniversalRouter.sol';
 import {Payments} from '../../contracts/modules/Payments.sol';
 import {Constants} from '../../contracts/libraries/Constants.sol';
@@ -15,24 +15,24 @@ import {RouterParameters} from '../../contracts/base/RouterImmutables.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import '@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol';
 
-abstract contract UniswapV2Test is Test {
+abstract contract AstraClassicTest is Test {
     address constant RECIPIENT = address(10);
     uint256 constant AMOUNT = 1 ether;
     uint256 constant BALANCE = 100000 ether;
-    IUniswapV2Factory constant FACTORY = IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
-    ERC20 constant WETH9 = ERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+    IAstraFactory constant FACTORY = IAstraFactory(0x2b6852CeDEF193ece9814Ee99BE4A4Df7F463557);
+    ERC20 constant SAMB = ERC20(0x2b2d892C3fe2b4113dd7aC0D2c1882AF202FB28F);
     Permit2 constant PERMIT2 = Permit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
     address constant FROM = address(1234);
 
     UniversalRouter router;
 
     function setUp() public virtual {
-        vm.createSelectFork(vm.envString('FORK_URL'), 16000000);
+        vm.createSelectFork(vm.envString('FORK_URL'), 33518444);
         setUpTokens();
 
         RouterParameters memory params = RouterParameters({
             permit2: address(PERMIT2),
-            weth9: address(WETH9),
+            samb: address(SAMB),
             seaportV1_5: address(0),
             seaportV1_4: address(0),
             openseaConduit: address(0),
@@ -47,9 +47,9 @@ abstract contract UniswapV2Test is Test {
             routerRewardsDistributor: address(0),
             looksRareRewardsDistributor: address(0),
             looksRareToken: address(0),
-            v2Factory: address(FACTORY),
-            v3Factory: address(0),
-            pairInitCodeHash: bytes32(0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f),
+            classicFactory: address(FACTORY),
+            clFactory: address(0),
+            pairInitCodeHash: bytes32(0x400e13fc6c59224f20228f0c0561806856ac34b7318f337f8012707c880c351f),
             poolInitCodeHash: bytes32(0)
         });
         router = new UniversalRouter(params);
@@ -59,7 +59,7 @@ abstract contract UniswapV2Test is Test {
             address pair = FACTORY.createPair(token0(), token1());
             deal(token0(), pair, 100 ether);
             deal(token1(), pair, 100 ether);
-            IUniswapV2Pair(pair).sync();
+            IAstraPair(pair).sync();
         }
 
         vm.startPrank(FROM);
@@ -73,7 +73,7 @@ abstract contract UniswapV2Test is Test {
     }
 
     function testExactInput0For1() public {
-        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.V2_SWAP_EXACT_IN)));
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.CLASSIC_SWAP_EXACT_IN)));
         address[] memory path = new address[](2);
         path[0] = token0();
         path[1] = token1();
@@ -86,7 +86,7 @@ abstract contract UniswapV2Test is Test {
     }
 
     function testExactInput1For0() public {
-        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.V2_SWAP_EXACT_IN)));
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.CLASSIC_SWAP_EXACT_IN)));
         address[] memory path = new address[](2);
         path[0] = token1();
         path[1] = token0();
@@ -99,7 +99,7 @@ abstract contract UniswapV2Test is Test {
     }
 
     function testExactInput0For1FromRouter() public {
-        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.V2_SWAP_EXACT_IN)));
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.CLASSIC_SWAP_EXACT_IN)));
         deal(token0(), address(router), AMOUNT);
         address[] memory path = new address[](2);
         path[0] = token0();
@@ -112,7 +112,7 @@ abstract contract UniswapV2Test is Test {
     }
 
     function testExactInput1For0FromRouter() public {
-        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.V2_SWAP_EXACT_IN)));
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.CLASSIC_SWAP_EXACT_IN)));
         deal(token1(), address(router), AMOUNT);
         address[] memory path = new address[](2);
         path[0] = token1();
@@ -125,7 +125,7 @@ abstract contract UniswapV2Test is Test {
     }
 
     function testExactOutput0For1() public {
-        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.V2_SWAP_EXACT_OUT)));
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.CLASSIC_SWAP_EXACT_OUT)));
         address[] memory path = new address[](2);
         path[0] = token0();
         path[1] = token1();
@@ -138,7 +138,7 @@ abstract contract UniswapV2Test is Test {
     }
 
     function testExactOutput1For0() public {
-        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.V2_SWAP_EXACT_OUT)));
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.CLASSIC_SWAP_EXACT_OUT)));
         address[] memory path = new address[](2);
         path[0] = token1();
         path[1] = token0();
@@ -151,7 +151,7 @@ abstract contract UniswapV2Test is Test {
     }
 
     function testExactOutput0For1FromRouter() public {
-        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.V2_SWAP_EXACT_OUT)));
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.CLASSIC_SWAP_EXACT_OUT)));
         deal(token0(), address(router), BALANCE);
         address[] memory path = new address[](2);
         path[0] = token0();
@@ -164,7 +164,7 @@ abstract contract UniswapV2Test is Test {
     }
 
     function testExactOutput1For0FromRouter() public {
-        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.V2_SWAP_EXACT_OUT)));
+        bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.CLASSIC_SWAP_EXACT_OUT)));
         deal(token1(), address(router), BALANCE);
         address[] memory path = new address[](2);
         path[0] = token1();

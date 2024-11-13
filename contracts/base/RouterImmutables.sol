@@ -3,11 +3,11 @@ pragma solidity ^0.8.17;
 
 import {IAllowanceTransfer} from 'permit2/src/interfaces/IAllowanceTransfer.sol';
 import {ERC20} from 'solmate/src/tokens/ERC20.sol';
-import {IWETH9} from '../interfaces/external/IWETH9.sol';
+import {ISAMB} from '../interfaces/external/ISAMB.sol';
 
 struct RouterParameters {
     address permit2;
-    address weth9;
+    address samb;
     address seaportV1_5;
     address seaportV1_4;
     address openseaConduit;
@@ -22,8 +22,8 @@ struct RouterParameters {
     address routerRewardsDistributor;
     address looksRareRewardsDistributor;
     address looksRareToken;
-    address v2Factory;
-    address v3Factory;
+    address classicFactory;
+    address clFactory;
     bytes32 pairInitCodeHash;
     bytes32 poolInitCodeHash;
 }
@@ -31,8 +31,8 @@ struct RouterParameters {
 /// @title Router Immutable Storage contract
 /// @notice Used along with the `RouterParameters` struct for ease of cross-chain deployment
 contract RouterImmutables {
-    /// @dev WETH9 address
-    IWETH9 internal immutable WETH9;
+    /// @dev SAMB address
+    ISAMB internal immutable SAMB;
 
     /// @dev Permit2 address
     IAllowanceTransfer internal immutable PERMIT2;
@@ -79,17 +79,17 @@ contract RouterImmutables {
     /// @dev The address of router rewards distributor
     address internal immutable ROUTER_REWARDS_DISTRIBUTOR;
 
-    /// @dev The address of UniswapV2Factory
-    address internal immutable UNISWAP_V2_FACTORY;
+    /// @dev The address of AstraFactory
+    address internal immutable UNISWAP_CLASSIC_FACTORY;
 
-    /// @dev The UniswapV2Pair initcodehash
-    bytes32 internal immutable UNISWAP_V2_PAIR_INIT_CODE_HASH;
+    /// @dev The AstraPair initcodehash
+    bytes32 internal immutable UNISWAP_CLASSIC_PAIR_INIT_CODE_HASH;
 
-    /// @dev The address of UniswapV3Factory
-    address internal immutable UNISWAP_V3_FACTORY;
+    /// @dev The address of AstraCLFactory
+    address internal immutable UNISWAP_CL_FACTORY;
 
-    /// @dev The UniswapV3Pool initcodehash
-    bytes32 internal immutable UNISWAP_V3_POOL_INIT_CODE_HASH;
+    /// @dev The AstraCLPool initcodehash
+    bytes32 internal immutable UNISWAP_CL_POOL_INIT_CODE_HASH;
 
     enum Spenders {
         OSConduit,
@@ -98,7 +98,7 @@ contract RouterImmutables {
 
     constructor(RouterParameters memory params) {
         PERMIT2 = IAllowanceTransfer(params.permit2);
-        WETH9 = IWETH9(params.weth9);
+        SAMB = ISAMB(params.samb);
         SEAPORT_V1_5 = params.seaportV1_5;
         SEAPORT_V1_4 = params.seaportV1_4;
         OPENSEA_CONDUIT = params.openseaConduit;
@@ -113,9 +113,9 @@ contract RouterImmutables {
         LOOKS_RARE_TOKEN = ERC20(params.looksRareToken);
         LOOKS_RARE_REWARDS_DISTRIBUTOR = params.looksRareRewardsDistributor;
         ROUTER_REWARDS_DISTRIBUTOR = params.routerRewardsDistributor;
-        UNISWAP_V2_FACTORY = params.v2Factory;
-        UNISWAP_V2_PAIR_INIT_CODE_HASH = params.pairInitCodeHash;
-        UNISWAP_V3_FACTORY = params.v3Factory;
-        UNISWAP_V3_POOL_INIT_CODE_HASH = params.poolInitCodeHash;
+        UNISWAP_CLASSIC_FACTORY = params.classicFactory;
+        UNISWAP_CLASSIC_PAIR_INIT_CODE_HASH = params.pairInitCodeHash;
+        UNISWAP_CL_FACTORY = params.clFactory;
+        UNISWAP_CL_POOL_INIT_CODE_HASH = params.poolInitCodeHash;
     }
 }

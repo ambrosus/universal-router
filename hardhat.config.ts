@@ -3,6 +3,7 @@ import '@nomiclabs/hardhat-ethers'
 import '@nomicfoundation/hardhat-chai-matchers'
 import dotenv from 'dotenv'
 dotenv.config()
+const HASH_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
 const DEFAULT_COMPILER_SETTINGS = {
   version: '0.8.17',
@@ -28,39 +29,24 @@ export default {
       allowUnlimitedContractSize: false,
       chainId: 1,
       forking: {
-        url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+        url: `https://network-archive.ambrosus.io`,
         blockNumber: 15360000,
       },
     },
+    devnet: {
+      url: 'https://network-archive.ambrosus-dev.io',
+      hardfork: 'istanbul',
+      accounts: [process.env.DEPLOYER_KEY || HASH_ZERO],
+    },
+    testnet: {
+      url: 'https://network-archive.ambrosus-test.io',
+      hardfork: 'istanbul',
+      accounts: [process.env.DEPLOYER_KEY || HASH_ZERO],
+    },
     mainnet: {
-      url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-    },
-    ropsten: {
-      url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
-    },
-    rinkeby: {
-      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
-    },
-    goerli: {
-      url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
-    },
-    kovan: {
-      url: `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
-    },
-    arbitrumRinkeby: {
-      url: `https://rinkeby.arbitrum.io/rpc`,
-    },
-    arbitrum: {
-      url: `https://arb1.arbitrum.io/rpc`,
-    },
-    optimismKovan: {
-      url: `https://kovan.optimism.io`,
-    },
-    optimism: {
-      url: `https://mainnet.optimism.io`,
-    },
-    polygon: {
-      url: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      url: 'https://network-archive.ambrosus.io',
+      hardfork: 'istanbul',
+      accounts: [process.env.DEPLOYER_KEY || HASH_ZERO],
     },
   },
   namedAccounts: {

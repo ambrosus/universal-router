@@ -5,14 +5,14 @@ import {BytesLib} from './BytesLib.sol';
 import {Constants} from '../../../libraries/Constants.sol';
 
 /// @title Functions for manipulating path data for multihop swaps
-library V3Path {
+library CLPath {
     using BytesLib for bytes;
 
     /// @notice Returns true iff the path contains two or more pools
     /// @param path The encoded swap path
     /// @return True if path contains two or more pools, otherwise false
     function hasMultiplePools(bytes calldata path) internal pure returns (bool) {
-        return path.length >= Constants.MULTIPLE_V3_POOLS_MIN_LENGTH;
+        return path.length >= Constants.MULTIPLE_CL_POOLS_MIN_LENGTH;
     }
 
     /// @notice Decodes the first pool in path
@@ -28,7 +28,7 @@ library V3Path {
     /// @param path The bytes encoded swap path
     /// @return The segment containing all data necessary to target the first pool in the path
     function getFirstPool(bytes calldata path) internal pure returns (bytes calldata) {
-        return path[:Constants.V3_POP_OFFSET];
+        return path[:Constants.CL_POP_OFFSET];
     }
 
     function decodeFirstToken(bytes calldata path) internal pure returns (address tokenA) {
@@ -38,6 +38,6 @@ library V3Path {
     /// @notice Skips a token + fee element
     /// @param path The swap path
     function skipToken(bytes calldata path) internal pure returns (bytes calldata) {
-        return path[Constants.NEXT_V3_POOL_OFFSET:];
+        return path[Constants.NEXT_CL_POOL_OFFSET:];
     }
 }

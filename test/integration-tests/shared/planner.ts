@@ -6,19 +6,19 @@ import { defaultAbiCoder } from 'ethers/lib/utils'
  * @enum {number}
  */
 export enum CommandType {
-  V3_SWAP_EXACT_IN = 0x00,
-  V3_SWAP_EXACT_OUT = 0x01,
+  CL_SWAP_EXACT_IN = 0x00,
+  CL_SWAP_EXACT_OUT = 0x01,
   PERMIT2_TRANSFER_FROM = 0x02,
   PERMIT2_PERMIT_BATCH = 0x03,
   SWEEP = 0x04,
   TRANSFER = 0x05,
   PAY_PORTION = 0x06,
 
-  V2_SWAP_EXACT_IN = 0x08,
-  V2_SWAP_EXACT_OUT = 0x09,
+  CLASSIC_SWAP_EXACT_IN = 0x08,
+  CLASSIC_SWAP_EXACT_OUT = 0x09,
   PERMIT2_PERMIT = 0x0a,
-  WRAP_ETH = 0x0b,
-  UNWRAP_WETH = 0x0c,
+  WRAP_AMB = 0x0b,
+  UNWRAP_SAMB = 0x0c,
   PERMIT2_TRANSFER_FROM_BATCH = 0x0d,
   BALANCE_CHECK_ERC20 = 0x0e,
 
@@ -82,14 +82,14 @@ const ABI_DEFINITION: { [key in CommandType]: string[] } = {
   [CommandType.PERMIT2_TRANSFER_FROM_BATCH]: [PERMIT2_TRANSFER_FROM_BATCH_STRUCT],
 
   // Uniswap Actions
-  [CommandType.V3_SWAP_EXACT_IN]: ['address', 'uint256', 'uint256', 'bytes', 'bool'],
-  [CommandType.V3_SWAP_EXACT_OUT]: ['address', 'uint256', 'uint256', 'bytes', 'bool'],
-  [CommandType.V2_SWAP_EXACT_IN]: ['address', 'uint256', 'uint256', 'address[]', 'bool'],
-  [CommandType.V2_SWAP_EXACT_OUT]: ['address', 'uint256', 'uint256', 'address[]', 'bool'],
+  [CommandType.CL_SWAP_EXACT_IN]: ['address', 'uint256', 'uint256', 'bytes', 'bool'],
+  [CommandType.CL_SWAP_EXACT_OUT]: ['address', 'uint256', 'uint256', 'bytes', 'bool'],
+  [CommandType.CLASSIC_SWAP_EXACT_IN]: ['address', 'uint256', 'uint256', 'address[]', 'bool'],
+  [CommandType.CLASSIC_SWAP_EXACT_OUT]: ['address', 'uint256', 'uint256', 'address[]', 'bool'],
 
   // Token Actions and Checks
-  [CommandType.WRAP_ETH]: ['address', 'uint256'],
-  [CommandType.UNWRAP_WETH]: ['address', 'uint256'],
+  [CommandType.WRAP_AMB]: ['address', 'uint256'],
+  [CommandType.UNWRAP_SAMB]: ['address', 'uint256'],
   [CommandType.SWEEP]: ['address', 'address', 'uint256'],
   [CommandType.SWEEP_ERC721]: ['address', 'address', 'uint256'],
   [CommandType.SWEEP_ERC1155]: ['address', 'address', 'uint256', 'uint256'],

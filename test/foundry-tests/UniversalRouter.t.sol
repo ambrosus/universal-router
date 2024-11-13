@@ -30,7 +30,7 @@ contract UniversalRouterTest is Test {
     function setUp() public {
         RouterParameters memory params = RouterParameters({
             permit2: address(0),
-            weth9: address(0),
+            samb: address(0),
             seaportV1_5: address(0),
             seaportV1_4: address(0),
             openseaConduit: address(0),
@@ -45,8 +45,8 @@ contract UniversalRouterTest is Test {
             routerRewardsDistributor: address(0),
             looksRareRewardsDistributor: address(0),
             looksRareToken: address(0),
-            v2Factory: address(0),
-            v3Factory: address(0),
+            classicFactory: address(0),
+            clFactory: address(0),
             pairInitCodeHash: bytes32(0),
             poolInitCodeHash: bytes32(0)
         });
@@ -96,7 +96,7 @@ contract UniversalRouterTest is Test {
     function testSweepETH() public {
         bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.SWEEP)));
         bytes[] memory inputs = new bytes[](1);
-        inputs[0] = abi.encode(Constants.ETH, RECIPIENT, AMOUNT);
+        inputs[0] = abi.encode(Constants.AMB, RECIPIENT, AMOUNT);
 
         assertEq(RECIPIENT.balance, 0);
 
@@ -108,11 +108,11 @@ contract UniversalRouterTest is Test {
     function testSweepETHInsufficientOutput() public {
         bytes memory commands = abi.encodePacked(bytes1(uint8(Commands.SWEEP)));
         bytes[] memory inputs = new bytes[](1);
-        inputs[0] = abi.encode(Constants.ETH, RECIPIENT, AMOUNT + 1);
+        inputs[0] = abi.encode(Constants.AMB, RECIPIENT, AMOUNT + 1);
 
         erc20.mint(address(router), AMOUNT);
 
-        vm.expectRevert(Payments.InsufficientETH.selector);
+        vm.expectRevert(Payments.InsufficientAMB.selector);
         router.execute(commands, inputs);
     }
 

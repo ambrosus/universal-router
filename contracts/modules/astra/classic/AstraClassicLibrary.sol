@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity >=0.8.0;
 
-import {IUniswapV2Pair} from '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
+import {IAstraPair} from '@airdao/astra-contracts/contracts/core/interfaces/IAstraPair.sol';
 
 /// @title Uniswap v2 Helper Library
 /// @notice Calculates the recipient address for a command
-library UniswapV2Library {
+library AstraClassicLibrary {
     error InvalidReserves();
     error InvalidPath();
 
@@ -78,7 +78,7 @@ library UniswapV2Library {
     {
         address token0;
         (pair, token0) = pairAndToken0For(factory, initCodeHash, tokenA, tokenB);
-        (uint256 reserve0, uint256 reserve1,) = IUniswapV2Pair(pair).getReserves();
+        (uint256 reserve0, uint256 reserve1,) = IAstraPair(pair).getReserves();
         (reserveA, reserveB) = tokenA == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
     }
 
