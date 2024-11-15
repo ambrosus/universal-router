@@ -4,11 +4,11 @@ pragma solidity ^0.8.15;
 import {DeployUniversalRouter} from '../DeployUniversalRouter.s.sol';
 import {RouterParameters} from 'contracts/base/RouterImmutables.sol';
 
-contract DeployAirdao is DeployUniversalRouter {
+contract DeployAirdaoMain is DeployUniversalRouter {
     function setUp() public override {
         params = RouterParameters({
-            permit2:0x2B75bF9B8ec5966832c123bc24Db3a283E3C1be4,
-            samb: 0x00662a0aC35717A1898bEfd243B47e373cFd73f7,
+            permit2: address(0), // Recheck
+            samb: 0x2b2d892C3fe2b4113dd7aC0D2c1882AF202FB28F,
             seaportV1_5: UNSUPPORTED_PROTOCOL,
             seaportV1_4: UNSUPPORTED_PROTOCOL,
             openseaConduit: UNSUPPORTED_PROTOCOL,
@@ -23,10 +23,10 @@ contract DeployAirdao is DeployUniversalRouter {
             routerRewardsDistributor: UNSUPPORTED_PROTOCOL,
             looksRareRewardsDistributor: UNSUPPORTED_PROTOCOL,
             looksRareToken: UNSUPPORTED_PROTOCOL,
-            classicFactory: UNSUPPORTED_PROTOCOL,
-            clFactory: 0x6bA4F5d2bA8427621f9ab55c6C71504F74A79176,
-            pairInitCodeHash: BYTES32_ZERO,
-            poolInitCodeHash: 0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54
+            classicFactory:0x2b6852CeDEF193ece9814Ee99BE4A4Df7F463557,
+            clFactory: address(0), // add after deployment
+            pairInitCodeHash: 0x400e13fc6c59224f20228f0c0561806856ac34b7318f337f8012707c880c351f,
+            poolInitCodeHash: 0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54 // recheck
         });
 
         unsupported = 0x0000000000000000000000000000000000000000;
