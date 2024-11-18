@@ -68,7 +68,7 @@ abstract contract DeployUniversalRouter is Script {
 
     function logParams() internal view {
         console2.log('permit2:', params.permit2);
-        console2.log('weth9:', params.samb);
+        console2.log('samb:', params.samb);
         console2.log('seaportV1_5:', params.seaportV1_5);
         console2.log('seaportV1_4:', params.seaportV1_4);
         console2.log('openseaConduit:', params.openseaConduit);
@@ -83,8 +83,8 @@ abstract contract DeployUniversalRouter is Script {
         console2.log('routerRewardsDistributor:', params.routerRewardsDistributor);
         console2.log('looksRareRewardsDistributor:', params.looksRareRewardsDistributor);
         console2.log('looksRareToken:', params.looksRareToken);
-        console2.log('v2Factory:', params.classicFactory);
-        console2.log('v3Factory:', params.clFactory);
+        console2.log('classicFactory:', params.classicFactory);
+        console2.log('clFactory:', params.clFactory);
     }
 
     function mapUnsupported(address protocol) internal view returns (address) {

@@ -29,6 +29,6 @@ contract DeployAirdaoTest is DeployUniversalRouter {
             poolInitCodeHash: 0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54
         });
 
-        unsupported = 0x0000000000000000000000000000000000000000;
+        unsupported = 0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7;
     }
 }
