@@ -1,18 +1,18 @@
-import { encodeSqrtRatioX96, FeeAmount, Pool, TickMath } from '@uniswap/v3-sdk'
-import { Pair, Route as V2RouteSDK } from '@uniswap/v2-sdk'
-import { Route as V3RouteSDK } from '@uniswap/v3-sdk'
+import { encodeSqrtRatioX96, FeeAmount, Pool, TickMath } from '@airdao/astra-cl-sdk'
+import { Pair, Route as ClassicRouteSDK } from '@airdao/astra-classic-sdk'
+import { Route as CLRouteSDK } from '@airdao/astra-cl-sdk'
 import { encodePath, expandTo18Decimals } from '../shared/swapRouter02Helpers'
 import { BigNumber } from 'ethers'
-import { SwapRouter } from '@uniswap/router-sdk'
+import { SwapRouter } from '@airdao/astra-router-sdk'
 import {
   executeSwapRouter02Swap,
   resetFork,
   SAMB,
-  DAI,
+  BOND,
   USDC,
-  USDT,
+  KOS,
   approveSwapRouter02,
-} from '../shared/mainnetForkHelpers'
+} from '../shared/testnetForkHelpers'
 import { ALICE_ADDRESS, DEADLINE, MAX_UINT, MAX_UINT160, SOURCE_MSG_SENDER } from '../shared/constants'
 import { expandTo6DecimalsBN } from '../shared/helpers'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
@@ -21,12 +21,12 @@ import { RoutePlanner, CommandType } from '../shared/planner'
 import hre from 'hardhat'
 import { UniversalRouter, Permit2, ERC20__factory, ERC20 } from '../../../typechain'
 import { getPermitSignature, PermitSingle } from '../shared/protocolHelpers/permit2'
-import { CurrencyAmount, Percent, Token, TradeType } from '@uniswap/sdk-core'
+import { CurrencyAmount, Percent, Token, TradeType } from '@airdao/astra-sdk-core'
 import snapshotGasCost from '@uniswap/snapshot-gas-cost'
-import { IRoute, Trade } from '@uniswap/router-sdk'
+import { IRoute, Trade } from '@airdao/astra-router-sdk'
 const { ethers } = hre
 
-describe('Uniswap UX Tests gas:', () => {
+describe('Astra UX Tests gas:', () => {
   let alice: SignerWithAddress
   let bob: SignerWithAddress
   let router: UniversalRouter
@@ -62,12 +62,12 @@ describe('Uniswap UX Tests gas:', () => {
 
     /*
       Simple Swap =
-      1000 USDC —V3→ AMB —V3→ DAI
+      1000 USDC —CL→ AMB —CL→ BOND
 
       Complex Swap =
-      3000 USDC —V3—> AMB — V3—> DAI
-      4000 USDC —V3—> USDT —V3—>DAI
-      3000 USDC —V2—> DAI
+      3000 USDC —CL—> AMB — CL—> BOND
+      4000 USDC —CL—> KOS —CL—>BOND
+      3000 USDC —Classic—> BOND
     */
 
     const createPool = (tokenA: Token, tokenB: Token, fee: FeeAmount) => {
@@ -76,13 +76,13 @@ describe('Uniswap UX Tests gas:', () => {
 
     const sqrtRatioX96 = encodeSqrtRatioX96(1, 1)
     const USDC_SAMB = createPool(USDC, SAMB, FeeAmount.HIGH)
-    const DAI_SAMB = createPool(DAI, SAMB, FeeAmount.HIGH)
-    const USDC_USDT = createPool(USDC, USDT, FeeAmount.LOWEST)
-    const USDT_DAI = createPool(DAI, USDT, FeeAmount.LOWEST)
+    const BOND_SAMB = createPool(BOND, SAMB, FeeAmount.HIGH)
+    const USDC_KOS = createPool(USDC, KOS, FeeAmount.LOWEST)
+    const KOS_BOND = createPool(BOND, KOS, FeeAmount.LOWEST)
 
-    const USDC_DAI_V2 = new Pair(
+    const USDC_BOND_Classic = new Pair(
       CurrencyAmount.fromRawAmount(USDC, 10000000),
-      CurrencyAmount.fromRawAmount(DAI, 10000000)
+      CurrencyAmount.fromRawAmount(BOND, 10000000)
     )
 
     const simpleSwapAmountInUSDC = CurrencyAmount.fromRawAmount(USDC, expandTo6DecimalsBN(1000).toString())
@@ -91,35 +91,35 @@ describe('Uniswap UX Tests gas:', () => {
     const complexSwapAmountInSplit3 = CurrencyAmount.fromRawAmount(USDC, expandTo6DecimalsBN(3000).toString())
 
     SIMPLE_SWAP = new Trade({
-      v3Routes: [
+      clRoutes: [
         {
-          routev3: new V3RouteSDK([USDC_SAMB, DAI_SAMB], USDC, DAI),
+          routecl: new CLRouteSDK([USDC_SAMB, BOND_SAMB], USDC, BOND),
           inputAmount: simpleSwapAmountInUSDC,
-          outputAmount: CurrencyAmount.fromRawAmount(DAI, expandTo18Decimals(1000)),
+          outputAmount: CurrencyAmount.fromRawAmount(BOND, expandTo18Decimals(1000)),
         },
       ],
-      v2Routes: [],
+      classicRoutes: [],
       tradeType: TradeType.EXACT_INPUT,
     })
 
     COMPLEX_SWAP = new Trade({
-      v3Routes: [
+      clRoutes: [
         {
-          routev3: new V3RouteSDK([USDC_SAMB, DAI_SAMB], USDC, DAI),
+          routecl: new CLRouteSDK([USDC_SAMB, BOND_SAMB], USDC, BOND),
           inputAmount: complexSwapAmountInSplit1,
-          outputAmount: CurrencyAmount.fromRawAmount(DAI, expandTo18Decimals(3000)),
+          outputAmount: CurrencyAmount.fromRawAmount(BOND, expandTo18Decimals(3000)),
         },
         {
-          routev3: new V3RouteSDK([USDC_USDT, USDT_DAI], USDC, DAI),
+          routecl: new CLRouteSDK([USDC_KOS, KOS_BOND], USDC, BOND),
           inputAmount: complexSwapAmountInSplit2,
-          outputAmount: CurrencyAmount.fromRawAmount(DAI, expandTo18Decimals(4000)),
+          outputAmount: CurrencyAmount.fromRawAmount(BOND, expandTo18Decimals(4000)),
         },
       ],
-      v2Routes: [
+      classicRoutes: [
         {
-          routev2: new V2RouteSDK([USDC_DAI_V2], USDC, DAI),
+          routeclassic: new ClassicRouteSDK([USDC_BOND_Classic], USDC, BOND),
           inputAmount: complexSwapAmountInSplit3,
-          outputAmount: CurrencyAmount.fromRawAmount(DAI, expandTo18Decimals(3000)),
+          outputAmount: CurrencyAmount.fromRawAmount(BOND, expandTo18Decimals(3000)),
         },
       ],
 
@@ -170,12 +170,18 @@ describe('Uniswap UX Tests gas:', () => {
       let route = trade.routes[i]
       let amountIn = BigNumber.from(swap.inputAmount.quotient.toString())
 
-      if (swap.route.protocol == 'V2') {
+      if (swap.route.protocol == 'Classic') {
         let pathAddresses = routeToAddresses(route)
-        planner.addCommand(CommandType.V2_SWAP_EXACT_IN, [bob.address, amountIn, 0, pathAddresses, SOURCE_MSG_SENDER])
-      } else if (swap.route.protocol == 'V3') {
+        planner.addCommand(CommandType.CLASSIC_SWAP_EXACT_IN, [
+          bob.address,
+          amountIn,
+          0,
+          pathAddresses,
+          SOURCE_MSG_SENDER,
+        ])
+      } else if (swap.route.protocol == 'CL') {
         let path = encodePathExactInput(route)
-        planner.addCommand(CommandType.V3_SWAP_EXACT_IN, [bob.address, amountIn, 0, path, SOURCE_MSG_SENDER])
+        planner.addCommand(CommandType.CL_SWAP_EXACT_IN, [bob.address, amountIn, 0, path, SOURCE_MSG_SENDER])
       } else {
         console.log('invalid protocol')
       }
@@ -190,7 +196,7 @@ describe('Uniswap UX Tests gas:', () => {
 
   describe('Approvals', async () => {
     it('Cost for infinite approval of permit2/swaprouter02 contract', async () => {
-      // Bob max-approves the permit2 contract to access his DAI and SAMB
+      // Bob max-approves the permit2 contract to access his BOND and SAMB
       await snapshotGasCost(await usdcContract.approve(permit2.address, MAX_UINT))
     })
   })
@@ -508,7 +514,7 @@ describe('Uniswap UX Tests gas:', () => {
           planner = new RoutePlanner()
         }
 
-        // Launch Universal Router v2
+        // Launch Universal Router classic
         const router2 = (await deployUniversalRouter(permit2)).connect(bob) as UniversalRouter
 
         // Do 5 simple swaps
@@ -522,7 +528,7 @@ describe('Uniswap UX Tests gas:', () => {
           planner = new RoutePlanner()
         }
 
-        // Launch Universal Router v3
+        // Launch Universal Router cl
         const router3 = (await deployUniversalRouter(permit2)).connect(bob) as UniversalRouter
 
         // Do 5 simple swaps
@@ -554,7 +560,7 @@ describe('Uniswap UX Tests gas:', () => {
           planner = new RoutePlanner()
         }
 
-        // Launch Universal Router v2
+        // Launch Universal Router classic
         const router2 = (await deployUniversalRouter(permit2)).connect(bob) as UniversalRouter
         MAX_PERMIT.spender = router2.address
         let calldata2 = await getPermitSignature(MAX_PERMIT, bob, permit2)
@@ -567,7 +573,7 @@ describe('Uniswap UX Tests gas:', () => {
           planner = new RoutePlanner()
         }
 
-        // Launch Universal Router v3
+        // Launch Universal Router cl
         const router3 = (await deployUniversalRouter(permit2)).connect(bob) as UniversalRouter
         MAX_PERMIT.spender = router3.address
         let calldata3 = await getPermitSignature(MAX_PERMIT, bob, permit2)
@@ -596,6 +602,6 @@ describe('Uniswap UX Tests gas:', () => {
 
   function routeToAddresses(route: IRoute<Token, Token, Pool | Pair>) {
     const tokens = route.path
-    return tokens.map((t) => t.address)
+    return tokens.map((t) => (t.isNative ? ethers.constants.AddressZero : t.address))
   }
 })

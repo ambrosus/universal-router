@@ -143,7 +143,7 @@ abstract contract Dispatcher is Payments, ClassicSwapRouter, CLSwapRouter, Callb
                         }
                         address[] calldata path = inputs.toAddressArray(3);
                         address payer = payerIsUser ? lockedBy : address(this);
-                        v2SwapExactInput(map(recipient), amountIn, amountOutMin, path, payer);
+                        classicSwapExactInput(map(recipient), amountIn, amountOutMin, path, payer);
                     } else if (command == Commands.CLASSIC_SWAP_EXACT_OUT) {
                         // equivalent: abi.decode(inputs, (address, uint256, uint256, bytes, bool))
                         address recipient;
@@ -159,7 +159,7 @@ abstract contract Dispatcher is Payments, ClassicSwapRouter, CLSwapRouter, Callb
                         }
                         address[] calldata path = inputs.toAddressArray(3);
                         address payer = payerIsUser ? lockedBy : address(this);
-                        v2SwapExactOutput(map(recipient), amountOut, amountInMax, path, payer);
+                        classicSwapExactOutput(map(recipient), amountOut, amountInMax, path, payer);
                     } else if (command == Commands.PERMIT2_PERMIT) {
                         // equivalent: abi.decode(inputs, (IAllowanceTransfer.PermitSingle, bytes))
                         IAllowanceTransfer.PermitSingle calldata permitSingle;

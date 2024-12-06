@@ -12,7 +12,7 @@ import {Permit2Payments} from '../../Permit2Payments.sol';
 import {Constants} from '../../../libraries/Constants.sol';
 import {ERC20} from 'solmate/src/tokens/ERC20.sol';
 
-/// @title Router for Uniswap v3 Trades
+/// @title Router for Astra CL Trades
 abstract contract CLSwapRouter is RouterImmutables, Permit2Payments, IAstraCLSwapCallback {
     using CLPath for bytes;
     using BytesLib for bytes;
@@ -67,7 +67,7 @@ abstract contract CLSwapRouter is RouterImmutables, Permit2Payments, IAstraCLSwa
         }
     }
 
-    /// @notice Performs a Uniswap v3 exact input swap
+    /// @notice Performs a Astra CL exact input swap
     /// @param recipient The recipient of the output tokens
     /// @param amountIn The amount of input tokens for the trade
     /// @param amountOutMinimum The minimum desired amount of output tokens
@@ -114,7 +114,7 @@ abstract contract CLSwapRouter is RouterImmutables, Permit2Payments, IAstraCLSwa
         if (amountOut < amountOutMinimum) revert CLTooLittleReceived();
     }
 
-    /// @notice Performs a Uniswap v3 exact output swap
+    /// @notice Performs a Astra CL exact output swap
     /// @param recipient The recipient of the output tokens
     /// @param amountOut The amount of output tokens to receive for the trade
     /// @param amountInMaximum The maximum desired amount of input tokens
@@ -165,9 +165,9 @@ abstract contract CLSwapRouter is RouterImmutables, Permit2Payments, IAstraCLSwa
                     keccak256(
                         abi.encodePacked(
                             hex'ff',
-                            UNISWAP_CL_FACTORY,
+                            ASTRA_CL_FACTORY,
                             keccak256(abi.encode(tokenA, tokenB, fee)),
-                            UNISWAP_CL_POOL_INIT_CODE_HASH
+                            ASTRA_CL_POOL_INIT_CODE_HASH
                         )
                     )
                 )

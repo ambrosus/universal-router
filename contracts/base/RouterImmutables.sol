@@ -80,16 +80,16 @@ contract RouterImmutables {
     address internal immutable ROUTER_REWARDS_DISTRIBUTOR;
 
     /// @dev The address of AstraFactory
-    address internal immutable UNISWAP_CLASSIC_FACTORY;
+    address internal immutable ASTRA_CLASSIC_FACTORY;
 
     /// @dev The AstraPair initcodehash
-    bytes32 internal immutable UNISWAP_CLASSIC_PAIR_INIT_CODE_HASH;
+    bytes32 internal immutable ASTRA_CLASSIC_PAIR_INIT_CODE_HASH;
 
     /// @dev The address of AstraCLFactory
-    address internal immutable UNISWAP_CL_FACTORY;
+    address internal immutable ASTRA_CL_FACTORY;
 
     /// @dev The AstraCLPool initcodehash
-    bytes32 internal immutable UNISWAP_CL_POOL_INIT_CODE_HASH;
+    bytes32 internal immutable ASTRA_CL_POOL_INIT_CODE_HASH;
 
     enum Spenders {
         OSConduit,
@@ -113,9 +113,9 @@ contract RouterImmutables {
         LOOKS_RARE_TOKEN = ERC20(params.looksRareToken);
         LOOKS_RARE_REWARDS_DISTRIBUTOR = params.looksRareRewardsDistributor;
         ROUTER_REWARDS_DISTRIBUTOR = params.routerRewardsDistributor;
-        UNISWAP_CLASSIC_FACTORY = params.classicFactory;
-        UNISWAP_CLASSIC_PAIR_INIT_CODE_HASH = params.pairInitCodeHash;
-        UNISWAP_CL_FACTORY = params.clFactory;
-        UNISWAP_CL_POOL_INIT_CODE_HASH = params.poolInitCodeHash;
+        ASTRA_CLASSIC_FACTORY = params.classicFactory;
+        ASTRA_CLASSIC_PAIR_INIT_CODE_HASH = params.pairInitCodeHash;
+        ASTRA_CL_FACTORY = params.clFactory;
+        ASTRA_CL_POOL_INIT_CODE_HASH = params.poolInitCodeHash;
     }
 }

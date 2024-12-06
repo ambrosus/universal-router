@@ -2,10 +2,10 @@ import hre from 'hardhat'
 const { ethers } = hre
 import { UniversalRouter, Permit2 } from '../../../typechain'
 import {
-  V2_FACTORY_MAINNET,
-  V3_FACTORY_MAINNET,
-  V2_INIT_CODE_HASH_MAINNET,
-  V3_INIT_CODE_HASH_MAINNET,
+  CLASSIC_FACTORY_TESTNET,
+  CL_FACTORY_TESTNET,
+  CLASSIC_INIT_CODE_HASH_TESTNET,
+  CL_INIT_CODE_HASH_TESTNET,
   ROUTER_REWARDS_DISTRIBUTOR,
   LOOKSRARE_REWARDS_DISTRIBUTOR,
   LOOKSRARE_TOKEN,
@@ -19,25 +19,25 @@ export async function deployRouter(
 ): Promise<UniversalRouter> {
   const routerParameters = {
     permit2: permit2.address,
-    weth9: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-    seaportV1_5: '0x00000000006c3852cbEf3e08E8dF289169EdE581', // need to update to v1.5 for tests once data is available
-    seaportV1_4: '0x00000000000001ad428e4906aE43D8F9852d0dD6',
-    openseaConduit: '0x1E0049783F008A0085193E00003D00cd54003c71',
-    nftxZap: mockReentrantProtocol ?? '0x941A6d105802CCCaa06DE58a13a6F49ebDCD481C',
-    x2y2: '0x74312363e45DCaBA76c59ec49a7Aa8A65a67EeD3',
-    foundation: '0xcDA72070E455bb31C7690a170224Ce43623d0B6f',
-    sudoswap: '0x2B2e8cDA09bBA9660dCA5cB6233787738Ad68329',
-    elementMarket: '0x20F780A973856B93f63670377900C1d2a50a77c4',
-    nft20Zap: '0xA42f6cADa809Bcf417DeefbdD69C5C5A909249C0',
-    cryptopunks: '0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB',
-    looksRareV2: '0x0000000000E655fAe4d56241588680F86E3b2377',
+    samb: '0x8D3e03889bFCb859B2dBEB65C60a52Ad9523512c',
+    seaportV1_5: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7', // need to update to v1.5 for tests once data is available
+    seaportV1_4: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
+    openseaConduit: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
+    nftxZap: mockReentrantProtocol ?? '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
+    x2y2: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
+    foundation: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
+    sudoswap: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
+    elementMarket: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
+    nft20Zap: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
+    cryptopunks: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
+    looksRareV2: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
     routerRewardsDistributor: ROUTER_REWARDS_DISTRIBUTOR,
     looksRareRewardsDistributor: mockLooksRareRewardsDistributor ?? LOOKSRARE_REWARDS_DISTRIBUTOR,
     looksRareToken: mockLooksRareToken ?? LOOKSRARE_TOKEN,
-    v2Factory: V2_FACTORY_MAINNET,
-    v3Factory: V3_FACTORY_MAINNET,
-    pairInitCodeHash: V2_INIT_CODE_HASH_MAINNET,
-    poolInitCodeHash: V3_INIT_CODE_HASH_MAINNET,
+    classicFactory: CLASSIC_FACTORY_TESTNET,
+    clFactory: CL_FACTORY_TESTNET,
+    pairInitCodeHash: CLASSIC_INIT_CODE_HASH_TESTNET,
+    poolInitCodeHash: CL_INIT_CODE_HASH_TESTNET,
   }
 
   const routerFactory = await ethers.getContractFactory('UniversalRouter')

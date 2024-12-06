@@ -1,7 +1,15 @@
 import type { Contract } from '@ethersproject/contracts'
-import { UniversalRouter, Permit2 } from '../../../typechain'
+import {
+  UniversalRouter,
+  Permit2,
+  ISAMB,
+  ERC20,
+  MintableERC20__factory,
+  ISAMB__factory,
+  ERC20__factory,
+} from '../../../typechain'
 import { abi as TOKEN_ABI } from '../../../artifacts/solmate/src/tokens/ERC20.sol/ERC20.json'
-import { resetFork, BOND, SAMB } from '../shared/mainnetForkHelpers'
+import { resetFork, BOND, SAMB } from '../shared/testnetForkHelpers'
 import { ALICE_ADDRESS, DEADLINE, AMB_ADDRESS, ONE_PERCENT_BIPS } from '../shared/constants'
 import { expandTo18DecimalsBN } from '../shared/helpers'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
@@ -12,16 +20,22 @@ import snapshotGasCost from '@uniswap/snapshot-gas-cost'
 const { ethers } = hre
 import SAMB_ABI from '../../../artifacts/contracts/interfaces/external/ISAMB.sol/ISAMB.json'
 import { BigNumber } from 'ethers'
-import { ADDRESS_THIS } from '@uniswap/router-sdk'
+import { ADDRESS_THIS } from '@airdao/astra-router-sdk'
+import { Token } from '@airdao/astra-sdk-core'
 
 describe('Payments Gas Tests', () => {
   let alice: SignerWithAddress
   let bob: SignerWithAddress
   let router: UniversalRouter
   let permit2: Permit2
-  let daiContract: Contract
-  let wethContract: Contract
+  let bondContract: ERC20
+  let sambContract: ISAMB
   let planner: RoutePlanner
+
+  async function deployMintableToken(name: string, symbol: string, signer: SignerWithAddress): Promise<Token> {
+    const token = await new MintableERC20__factory(signer).deploy(BigNumber.from(10).pow(18).mul('1000000000000000000'))
+    return new Token(22040, token.address, 18, name, symbol)
+  }
 
   beforeEach(async () => {
     await resetFork()
@@ -29,10 +43,20 @@ describe('Payments Gas Tests', () => {
       method: 'hardhat_impersonateAccount',
       params: [ALICE_ADDRESS],
     })
+    await hre.network.provider.request({
+      method: 'hardhat_setBalance',
+      params: [ALICE_ADDRESS, '0x10000000000000000000000'],
+    })
     alice = await ethers.getSigner(ALICE_ADDRESS)
     bob = (await ethers.getSigners())[1]
-    daiContract = new ethers.Contract(BOND.address, TOKEN_ABI, alice)
-    wethContract = new ethers.Contract(SAMB.address, new ethers.utils.Interface(SAMB_ABI.abi), alice)
+    const BOND = await deployMintableToken('Bond', 'BOND', alice)
+    await (
+      await MintableERC20__factory.connect(BOND.address, alice).transfer(bob.address, expandTo18DecimalsBN(100000000))
+    ).wait()
+    await (await ISAMB__factory.connect(SAMB.address, alice).deposit({ value: expandTo18DecimalsBN(1000) })).wait()
+    bondContract = ERC20__factory.connect(BOND.address, bob)
+    sambContract = ISAMB__factory.connect(SAMB.address, bob)
+
     permit2 = (await deployPermit2()).connect(alice) as Permit2
     router = (await deployUniversalRouter(permit2)).connect(alice) as UniversalRouter
     planner = new RoutePlanner()
@@ -44,7 +68,7 @@ describe('Payments Gas Tests', () => {
     it('gas: TRANSFER with ERC20', async () => {
       // seed router with tokens
       const amountOfBOND: BigNumber = expandTo18DecimalsBN(3)
-      await daiContract.transfer(router.address, amountOfBOND)
+      await bondContract.transfer(router.address, amountOfBOND)
 
       planner.addCommand(CommandType.TRANSFER, [BOND.address, ALICE_ADDRESS, amountOfBOND])
       const { commands, inputs } = planner
@@ -55,7 +79,7 @@ describe('Payments Gas Tests', () => {
     it('gas: UNWRAP_SAMB', async () => {
       // seed router with SAMB
       const amount: BigNumber = expandTo18DecimalsBN(3)
-      await wethContract.transfer(router.address, amount)
+      await sambContract.transfer(router.address, amount)
 
       planner.addCommand(CommandType.UNWRAP_SAMB, [alice.address, amount])
       const { commands, inputs } = planner
@@ -66,7 +90,7 @@ describe('Payments Gas Tests', () => {
     it('gas: TRANSFER with AMB', async () => {
       // seed router with SAMB and unwrap it into the router
       const amount: BigNumber = expandTo18DecimalsBN(3)
-      await wethContract.transfer(router.address, amount)
+      await sambContract.transfer(router.address, amount)
       planner.addCommand(CommandType.UNWRAP_SAMB, [ADDRESS_THIS, amount])
       let { commands, inputs } = planner
       await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)
@@ -82,7 +106,7 @@ describe('Payments Gas Tests', () => {
     it('gas: SWEEP with ERC20', async () => {
       // seed router with tokens
       const amountOfBOND: BigNumber = expandTo18DecimalsBN(3)
-      await daiContract.transfer(router.address, amountOfBOND)
+      await bondContract.transfer(router.address, amountOfBOND)
 
       planner.addCommand(CommandType.SWEEP, [BOND.address, ALICE_ADDRESS, amountOfBOND])
       const { commands, inputs } = planner
@@ -93,7 +117,7 @@ describe('Payments Gas Tests', () => {
     it('gas: WRAP_AMB', async () => {
       // seed router with SAMB and unwrap it into the router
       const amount: BigNumber = expandTo18DecimalsBN(3)
-      await wethContract.transfer(router.address, amount)
+      await sambContract.transfer(router.address, amount)
       planner.addCommand(CommandType.UNWRAP_SAMB, [ADDRESS_THIS, amount])
       let { commands, inputs } = planner
       await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)
@@ -109,7 +133,7 @@ describe('Payments Gas Tests', () => {
     it('gas: UNWRAP_SAMB_WITH_FEE', async () => {
       // seed router with SAMB
       const amount: BigNumber = expandTo18DecimalsBN(3)
-      await wethContract.transfer(router.address, amount)
+      await sambContract.transfer(router.address, amount)
 
       planner.addCommand(CommandType.UNWRAP_SAMB, [alice.address, amount])
       planner.addCommand(CommandType.PAY_PORTION, [AMB_ADDRESS, bob.address, 50])
@@ -122,7 +146,7 @@ describe('Payments Gas Tests', () => {
     it('gas: SWEEP_WITH_FEE', async () => {
       // seed router with tokens
       const amountOfBOND: BigNumber = expandTo18DecimalsBN(3)
-      await daiContract.transfer(router.address, amountOfBOND)
+      await bondContract.transfer(router.address, amountOfBOND)
 
       planner.addCommand(CommandType.PAY_PORTION, [BOND.address, bob.address, ONE_PERCENT_BIPS])
       planner.addCommand(CommandType.SWEEP, [BOND.address, alice.address, 1])

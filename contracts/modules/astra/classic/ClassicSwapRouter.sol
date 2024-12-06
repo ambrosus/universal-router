@@ -9,13 +9,13 @@ import {Permit2Payments} from '../../Permit2Payments.sol';
 import {Constants} from '../../../libraries/Constants.sol';
 import {ERC20} from 'solmate/src/tokens/ERC20.sol';
 
-/// @title Router for Uniswap v2 Trades
+/// @title Router for Astra Classic Trades
 abstract contract ClassicSwapRouter is RouterImmutables, Permit2Payments {
     error ClassicTooLittleReceived();
     error ClassicTooMuchRequested();
     error ClassicInvalidPath();
 
-    function _v2Swap(address[] calldata path, address recipient, address pair) private {
+    function _classicSwap(address[] calldata path, address recipient, address pair) private {
         unchecked {
             if (path.length < 2) revert ClassicInvalidPath();
 
@@ -35,7 +35,7 @@ abstract contract ClassicSwapRouter is RouterImmutables, Permit2Payments {
                 address nextPair;
                 (nextPair, token0) = i < penultimatePairIndex
                     ? AstraClassicLibrary.pairAndToken0For(
-                        UNISWAP_CLASSIC_FACTORY, UNISWAP_CLASSIC_PAIR_INIT_CODE_HASH, output, path[i + 2]
+                        ASTRA_CLASSIC_FACTORY, ASTRA_CLASSIC_PAIR_INIT_CODE_HASH, output, path[i + 2]
                     )
                     : (recipient, address(0));
                 IAstraPair(pair).swap(amount0Out, amount1Out, nextPair, new bytes(0));
@@ -44,13 +44,13 @@ abstract contract ClassicSwapRouter is RouterImmutables, Permit2Payments {
         }
     }
 
-    /// @notice Performs a Uniswap v2 exact input swap
+    /// @notice Performs a Astra Classic exact input swap
     /// @param recipient The recipient of the output tokens
     /// @param amountIn The amount of input tokens for the trade
     /// @param amountOutMinimum The minimum desired amount of output tokens
     /// @param path The path of the trade as an array of token addresses
     /// @param payer The address that will be paying the input
-    function v2SwapExactInput(
+    function classicSwapExactInput(
         address recipient,
         uint256 amountIn,
         uint256 amountOutMinimum,
@@ -58,7 +58,7 @@ abstract contract ClassicSwapRouter is RouterImmutables, Permit2Payments {
         address payer
     ) internal {
         address firstPair =
-            AstraClassicLibrary.pairFor(UNISWAP_CLASSIC_FACTORY, UNISWAP_CLASSIC_PAIR_INIT_CODE_HASH, path[0], path[1]);
+            AstraClassicLibrary.pairFor(ASTRA_CLASSIC_FACTORY, ASTRA_CLASSIC_PAIR_INIT_CODE_HASH, path[0], path[1]);
         if (
             amountIn != Constants.ALREADY_PAID // amountIn of 0 to signal that the pair already has the tokens
         ) {
@@ -68,30 +68,31 @@ abstract contract ClassicSwapRouter is RouterImmutables, Permit2Payments {
         ERC20 tokenOut = ERC20(path[path.length - 1]);
         uint256 balanceBefore = tokenOut.balanceOf(recipient);
 
-        _v2Swap(path, recipient, firstPair);
+        _classicSwap(path, recipient, firstPair);
 
         uint256 amountOut = tokenOut.balanceOf(recipient) - balanceBefore;
         if (amountOut < amountOutMinimum) revert ClassicTooLittleReceived();
     }
 
-    /// @notice Performs a Uniswap v2 exact output swap
+    /// @notice Performs a Astra Classic exact output swap
     /// @param recipient The recipient of the output tokens
     /// @param amountOut The amount of output tokens to receive for the trade
     /// @param amountInMaximum The maximum desired amount of input tokens
     /// @param path The path of the trade as an array of token addresses
     /// @param payer The address that will be paying the input
-    function v2SwapExactOutput(
+    function classicSwapExactOutput(
         address recipient,
         uint256 amountOut,
         uint256 amountInMaximum,
         address[] calldata path,
         address payer
     ) internal {
-        (uint256 amountIn, address firstPair) =
-            AstraClassicLibrary.getAmountInMultihop(UNISWAP_CLASSIC_FACTORY, UNISWAP_CLASSIC_PAIR_INIT_CODE_HASH, amountOut, path);
+        (uint256 amountIn, address firstPair) = AstraClassicLibrary.getAmountInMultihop(
+            ASTRA_CLASSIC_FACTORY, ASTRA_CLASSIC_PAIR_INIT_CODE_HASH, amountOut, path
+        );
         if (amountIn > amountInMaximum) revert ClassicTooMuchRequested();
 
         payOrPermit2Transfer(path[0], payer, firstPair, amountIn);
-        _v2Swap(path, recipient, firstPair);
+        _classicSwap(path, recipient, firstPair);
     }
 }

@@ -10,7 +10,7 @@ library Constants {
     /// This value is equivalent to 1<<255, i.e. a singular 1 in the most significant bit.
     uint256 internal constant CONTRACT_BALANCE = 0x8000000000000000000000000000000000000000000000000000000000000000;
 
-    /// @dev Used for identifying cases when a v2 pair has already received input tokens
+    /// @dev Used for identifying cases when a classic pair has already received input tokens
     uint256 internal constant ALREADY_PAID = 0;
 
     /// @dev Used as a flag for identifying the transfer of AMB instead of a token

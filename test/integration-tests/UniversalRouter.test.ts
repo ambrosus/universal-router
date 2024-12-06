@@ -1,4 +1,3 @@
-
 import {
   UniversalRouter,
   Permit2,
@@ -6,10 +5,11 @@ import {
   ISAMB,
   MockLooksRareRewardsDistributor,
   ERC721,
-  ERC1155,
+  MintableERC20__factory,
+  ISAMB__factory,
 } from '../../typechain'
 import { BigNumber, BigNumberish } from 'ethers'
-import { Pair } from '@uniswap/v2-sdk'
+import { Pair } from '@airdao/astra-classic-sdk'
 import { expect } from './shared/expect'
 import { abi as ROUTER_ABI } from '../../artifacts/contracts/UniversalRouter.sol/UniversalRouter.json'
 import { abi as TOKEN_ABI } from '../../artifacts/solmate/src/tokens/ERC20.sol/ERC20.json'
@@ -38,33 +38,38 @@ import {
   seaportV1_4Orders,
   seaportV1_4Interface,
 } from './shared/protocolHelpers/seaport'
-import { resetFork, SAMB, BOND, MILADY_721, COVEN_721 } from './shared/mainnetForkHelpers'
+import { resetFork, SAMB, BOND, MILADY_721, COVEN_721 } from './shared/testnetForkHelpers'
 import { CommandType, RoutePlanner } from './shared/planner'
 import { makePair } from './shared/swapRouter02Helpers'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expandTo18DecimalsBN } from './shared/helpers'
 import hre from 'hardhat'
 import { findCustomErrorSelector } from './shared/parseEvents'
+import { Token } from '@airdao/astra-sdk-core'
 
 const { ethers } = hre
 const nftxZapInterface = new ethers.utils.Interface(NFTX_ZAP_ABI)
 const routerInterface = new ethers.utils.Interface(ROUTER_ABI)
 
+async function deployMintableToken(name: string, symbol: string, signer: SignerWithAddress): Promise<Token> {
+  const token = await new MintableERC20__factory(signer).deploy(BigNumber.from(10).pow(18).mul('1000000000000000000'))
+  return new Token(22040, token.address, 18, name, symbol)
+}
+
 describe('UniversalRouter', () => {
   let alice: SignerWithAddress
   let router: UniversalRouter
   let permit2: Permit2
-  let daiContract: ERC20
-  let wethContract: ISAMB
+  let bondContract: ERC20
+  let sambContract: ISAMB
   let mockLooksRareToken: ERC20
   let mockLooksRareRewardsDistributor: MockLooksRareRewardsDistributor
   let pair_BOND_SAMB: Pair
   let cryptoCovens: ERC721
 
-
   beforeEach(async () => {
     await resetFork()
-    alice = await ethers.getSigner(ALICE_ADDRESS) 
+    alice = await ethers.getSigner(ALICE_ADDRESS)
     await hre.network.provider.request({
       method: 'hardhat_impersonateAccount',
       params: [ALICE_ADDRESS],
@@ -82,8 +87,11 @@ describe('UniversalRouter', () => {
       ROUTER_REWARDS_DISTRIBUTOR,
       mockLooksRareToken.address
     )) as MockLooksRareRewardsDistributor
-    daiContract = new ethers.Contract(BOND.address, TOKEN_ABI, alice) as ERC20
-    wethContract = new ethers.Contract(SAMB.address, SAMB_ABI, alice) as ISAMB
+    const BOND = await deployMintableToken('Bond', 'BOND', alice)
+    await (await ISAMB__factory.connect(SAMB.address, alice).deposit({ value: expandTo18DecimalsBN(1000) })).wait()
+
+    bondContract = new ethers.Contract(BOND.address, TOKEN_ABI, alice) as ERC20
+    sambContract = new ethers.Contract(SAMB.address, SAMB_ABI, alice) as ISAMB
     pair_BOND_SAMB = await makePair(alice, BOND, SAMB)
     permit2 = (await deployPermit2()).connect(alice) as Permit2
     router = (
@@ -98,8 +106,8 @@ describe('UniversalRouter', () => {
 
     beforeEach(async () => {
       planner = new RoutePlanner()
-      await daiContract.approve(permit2.address, MAX_UINT)
-      await wethContract.approve(permit2.address, MAX_UINT)
+      await bondContract.approve(permit2.address, MAX_UINT)
+      await sambContract.approve(permit2.address, MAX_UINT)
       await permit2.approve(BOND.address, router.address, MAX_UINT160, DEADLINE)
       await permit2.approve(SAMB.address, router.address, MAX_UINT160, DEADLINE)
     })
@@ -147,7 +155,7 @@ describe('UniversalRouter', () => {
     })
 
     it('reverts if paying a portion over 100% of contract balance', async () => {
-      await daiContract.transfer(router.address, expandTo18DecimalsBN(1))
+      await bondContract.transfer(router.address, expandTo18DecimalsBN(1))
       planner.addCommand(CommandType.PAY_PORTION, [SAMB.address, alice.address, 11_000])
       planner.addCommand(CommandType.SWEEP, [SAMB.address, alice.address, 1])
       const { commands, inputs } = planner
@@ -235,7 +243,7 @@ describe('UniversalRouter', () => {
 
         const { commands, inputs } = planner
         const covenBalanceBefore = await cryptoCovens.balanceOf(alice.address)
-        const wethBalanceBefore = await wethContract.balanceOf(alice.address)
+        const sambBalanceBefore = await sambContract.balanceOf(alice.address)
 
         await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).to.changeEtherBalance(
           alice,
@@ -243,10 +251,10 @@ describe('UniversalRouter', () => {
         )
 
         const covenBalanceAfter = await cryptoCovens.balanceOf(alice.address)
-        const wethBalanceAfter = await wethContract.balanceOf(alice.address)
+        const sambBalanceAfter = await sambContract.balanceOf(alice.address)
 
         expect(covenBalanceAfter.sub(covenBalanceBefore)).to.eq(1)
-        expect(wethBalanceBefore.sub(wethBalanceAfter)).to.eq(value)
+        expect(sambBalanceBefore.sub(sambBalanceAfter)).to.eq(value)
       })
     })
   })
@@ -276,7 +284,7 @@ describe('UniversalRouter newer block', () => {
 
   beforeEach(async () => {
     // Since new NFTX contract was recently released, we have to fork from a much newer block
-    await resetFork(17029001) // 17029002 - 1
+    await resetFork(2765037) // 2765038 - 1
     alice = await ethers.getSigner(ALICE_ADDRESS)
     await hre.network.provider.request({
       method: 'hardhat_impersonateAccount',

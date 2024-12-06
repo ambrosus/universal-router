@@ -7,7 +7,7 @@ import {
   getAdvancedOrderParams,
   purchaseDataForTwoCovensSeaport,
 } from './../shared/protocolHelpers/seaport'
-import { resetFork, USDC } from './../shared/mainnetForkHelpers'
+import { resetFork, USDC } from '../shared/testnetForkHelpers'
 import { ALICE_ADDRESS, COVEN_ADDRESS, DEADLINE, OPENSEA_CONDUIT_KEY } from './../shared/constants'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import hre from 'hardhat'
@@ -28,6 +28,10 @@ describe('Check Ownership Gas', () => {
       params: [ALICE_ADDRESS],
     })
     alice = await ethers.getSigner(ALICE_ADDRESS)
+    await hre.network.provider.request({
+      method: 'hardhat_setBalance',
+      params: [ALICE_ADDRESS, '0x10000000000000000000000'],
+    })
     permit2 = (await deployPermit2()).connect(alice) as Permit2
     router = (await deployUniversalRouter(permit2)).connect(alice) as UniversalRouter
     planner = new RoutePlanner()

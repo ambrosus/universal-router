@@ -1,16 +1,16 @@
 import JSBI from 'jsbi'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import { BigintIsh, CurrencyAmount, Token } from '@uniswap/sdk-core'
-import { Pair } from '@uniswap/v2-sdk'
-import { encodeSqrtRatioX96, FeeAmount, nearestUsableTick, Pool, TickMath, TICK_SPACINGS } from '@uniswap/v3-sdk'
-import { getV2PoolReserves, SAMB, KOS, USDC, BOND } from './mainnetForkHelpers'
+import { BigintIsh, CurrencyAmount, Token } from '@airdao/astra-sdk-core'
+import { Pair } from '@airdao/astra-classic-sdk'
+import { encodeSqrtRatioX96, FeeAmount, nearestUsableTick, Pool, TickMath, TICK_SPACINGS } from '@airdao/astra-cl-sdk'
+import { getClassicPoolReserves, SAMB, KOS, USDC, BOND } from './testnetForkHelpers'
 import { BigNumber } from 'ethers'
 
 const feeAmount = FeeAmount.MEDIUM
 const sqrtRatioX96 = encodeSqrtRatioX96(1, 1)
 const liquidity = 1_000_000
 
-// v3
+// cl
 export const makePool = (token0: Token, token1: Token, liquidity: number) => {
   return new Pool(token0, token1, feeAmount, sqrtRatioX96, liquidity, TickMath.getTickAtSqrtRatio(sqrtRatioX96), [
     {
@@ -32,9 +32,9 @@ export const pool_USDC_SAMB = makePool(USDC, SAMB, liquidity)
 export const pool_USDC_KOS = makePool(USDC, KOS, liquidity)
 export const pool_SAMB_KOS = makePool(KOS, SAMB, liquidity)
 
-// v2
+// classic
 export const makePair = async (alice: SignerWithAddress, token0: Token, token1: Token) => {
-  const reserves = await getV2PoolReserves(alice, token0, token1)
+  const reserves = await getClassicPoolReserves(alice, token0, token1)
   let reserve0: CurrencyAmount<Token> = CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(reserves.reserve0))
   let reserve1: CurrencyAmount<Token> = CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(reserves.reserve1))
 
@@ -43,7 +43,7 @@ export const makePair = async (alice: SignerWithAddress, token0: Token, token1: 
 
 const FEE_SIZE = 3
 
-// v3
+// cl
 export function encodePath(path: string[], fees: FeeAmount[]): string {
   if (path.length != fees.length + 1) {
     throw new Error('path/fee lengths do not match')

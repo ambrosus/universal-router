@@ -3,18 +3,18 @@ pragma solidity >=0.8.0;
 
 import {IAstraPair} from '@airdao/astra-contracts/contracts/core/interfaces/IAstraPair.sol';
 
-/// @title Uniswap v2 Helper Library
+/// @title Astra Classic Helper Library
 /// @notice Calculates the recipient address for a command
 library AstraClassicLibrary {
     error InvalidReserves();
     error InvalidPath();
 
-    /// @notice Calculates the v2 address for a pair without making any external calls
-    /// @param factory The address of the v2 factory
+    /// @notice Calculates the classic address for a pair without making any external calls
+    /// @param factory The address of the classic factory
     /// @param initCodeHash The hash of the pair initcode
     /// @param tokenA One of the tokens in the pair
     /// @param tokenB The other token in the pair
-    /// @return pair The resultant v2 pair address
+    /// @return pair The resultant classic pair address
     function pairFor(address factory, bytes32 initCodeHash, address tokenA, address tokenB)
         internal
         pure
@@ -24,12 +24,12 @@ library AstraClassicLibrary {
         pair = pairForPreSorted(factory, initCodeHash, token0, token1);
     }
 
-    /// @notice Calculates the v2 address for a pair and the pair's token0
-    /// @param factory The address of the v2 factory
+    /// @notice Calculates the classic address for a pair and the pair's token0
+    /// @param factory The address of the classic factory
     /// @param initCodeHash The hash of the pair initcode
     /// @param tokenA One of the tokens in the pair
     /// @param tokenB The other token in the pair
-    /// @return pair The resultant v2 pair address
+    /// @return pair The resultant classic pair address
     /// @return token0 The token considered token0 in this pair
     function pairAndToken0For(address factory, bytes32 initCodeHash, address tokenA, address tokenB)
         internal
@@ -41,12 +41,12 @@ library AstraClassicLibrary {
         pair = pairForPreSorted(factory, initCodeHash, token0, token1);
     }
 
-    /// @notice Calculates the v2 address for a pair assuming the input tokens are pre-sorted
-    /// @param factory The address of the v2 factory
+    /// @notice Calculates the classic address for a pair assuming the input tokens are pre-sorted
+    /// @param factory The address of the classic factory
     /// @param initCodeHash The hash of the pair initcode
     /// @param token0 The pair's token0
     /// @param token1 The pair's token1
-    /// @return pair The resultant v2 pair address
+    /// @return pair The resultant classic pair address
     function pairForPreSorted(address factory, bytes32 initCodeHash, address token0, address token1)
         private
         pure
@@ -63,12 +63,12 @@ library AstraClassicLibrary {
         );
     }
 
-    /// @notice Calculates the v2 address for a pair and fetches the reserves for each token
-    /// @param factory The address of the v2 factory
+    /// @notice Calculates the classic address for a pair and fetches the reserves for each token
+    /// @param factory The address of the classic factory
     /// @param initCodeHash The hash of the pair initcode
     /// @param tokenA One of the tokens in the pair
     /// @param tokenB The other token in the pair
-    /// @return pair The resultant v2 pair address
+    /// @return pair The resultant classic pair address
     /// @return reserveA The reserves for tokenA
     /// @return reserveB The reserves for tokenB
     function pairAndReservesFor(address factory, bytes32 initCodeHash, address tokenA, address tokenB)
@@ -116,7 +116,7 @@ library AstraClassicLibrary {
     }
 
     /// @notice Returns the input amount needed for a desired output amount in a multi-hop trade
-    /// @param factory The address of the v2 factory
+    /// @param factory The address of the classic factory
     /// @param initCodeHash The hash of the pair initcode
     /// @param amountOut The desired output amount
     /// @param path The path of the multi-hop trade

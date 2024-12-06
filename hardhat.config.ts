@@ -1,5 +1,6 @@
 import 'hardhat-typechain'
 import '@nomiclabs/hardhat-ethers'
+import '@nomicfoundation/hardhat-foundry'
 import '@nomicfoundation/hardhat-chai-matchers'
 import dotenv from 'dotenv'
 dotenv.config()
@@ -26,11 +27,17 @@ export default {
   },
   networks: {
     hardhat: {
+      // loggingEnabled: true,
       allowUnlimitedContractSize: false,
-      chainId: 1,
+      chainId: 22040,
       forking: {
-        url: `https://network-archive.ambrosus.io`,
-        blockNumber: 15360000,
+        url: `https://network-archive.ambrosus-test.io`,
+        blockNumber: 2765038,
+        chains: {
+          22040: {
+            istanbul: 2760000,
+          },
+        },
       },
     },
     devnet: {

@@ -23,7 +23,7 @@ contract DeployAirdaoMain is DeployUniversalRouter {
             routerRewardsDistributor: UNSUPPORTED_PROTOCOL,
             looksRareRewardsDistributor: UNSUPPORTED_PROTOCOL,
             looksRareToken: UNSUPPORTED_PROTOCOL,
-            classicFactory:0x2b6852CeDEF193ece9814Ee99BE4A4Df7F463557,
+            classicFactory: 0x2b6852CeDEF193ece9814Ee99BE4A4Df7F463557,
             clFactory: address(0), // add after deployment
             pairInitCodeHash: 0x400e13fc6c59224f20228f0c0561806856ac34b7318f337f8012707c880c351f,
             poolInitCodeHash: 0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54 // recheck
