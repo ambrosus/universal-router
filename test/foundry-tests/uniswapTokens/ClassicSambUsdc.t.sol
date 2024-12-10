@@ -6,7 +6,7 @@ import {ERC20} from 'solmate/src/tokens/ERC20.sol';
 import {AstraClassicTest} from '../AstraClassic.t.sol';
 
 contract ClassicSambUsdc is AstraClassicTest {
-    ERC20 constant USDC = ERC20(0xFF9F502976E7bD2b4901aD7Dd1131Bb81E5567de);
+    ERC20 constant USDC = ERC20(0x561f21226fAA48224336Da90A500b6abA9D73694);
 
     function token0() internal pure override returns (address) {
         return address(USDC);

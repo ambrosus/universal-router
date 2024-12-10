@@ -19,17 +19,16 @@ abstract contract AstraClassicTest is Test {
     address constant RECIPIENT = address(10);
     uint256 constant AMOUNT = 1 ether;
     uint256 constant BALANCE = 100000 ether;
-    IAstraFactory constant FACTORY = IAstraFactory(0x2b6852CeDEF193ece9814Ee99BE4A4Df7F463557);
-    ERC20 constant SAMB = ERC20(0x2b2d892C3fe2b4113dd7aC0D2c1882AF202FB28F);
-    Permit2 constant PERMIT2 = Permit2(0x000000000022D473030F116dDEE9F6B43aC78BA3);
+    IAstraFactory constant FACTORY = IAstraFactory(0x7bf4227eDfAA6823aD577dc198DbCadECccbEb07);
+    ERC20 constant SAMB = ERC20(0x8D3e03889bFCb859B2dBEB65C60a52Ad9523512c);
+    Permit2 constant PERMIT2 = Permit2(0x2B75bF9B8ec5966832c123bc24Db3a283E3C1be4);
     address constant FROM = address(1234);
 
     UniversalRouter router;
 
     function setUp() public virtual {
-        vm.createSelectFork(vm.envString('FORK_URL'), 33518444);
+        vm.createSelectFork(vm.envString('FORK_URL'), 2810478);
         setUpTokens();
-
         RouterParameters memory params = RouterParameters({
             permit2: address(PERMIT2),
             samb: address(SAMB),
@@ -49,7 +48,7 @@ abstract contract AstraClassicTest is Test {
             looksRareToken: address(0),
             classicFactory: address(FACTORY),
             clFactory: address(0),
-            pairInitCodeHash: bytes32(0x400e13fc6c59224f20228f0c0561806856ac34b7318f337f8012707c880c351f),
+            pairInitCodeHash: bytes32(0x890f57556fe54f67a74a243b39a055a4ad13602f405bfc7607a203a81592f64e),
             poolInitCodeHash: bytes32(0)
         });
         router = new UniversalRouter(params);
@@ -66,8 +65,10 @@ abstract contract AstraClassicTest is Test {
         deal(FROM, BALANCE);
         deal(token0(), FROM, BALANCE);
         deal(token1(), FROM, BALANCE);
+
         ERC20(token0()).approve(address(PERMIT2), type(uint256).max);
         ERC20(token1()).approve(address(PERMIT2), type(uint256).max);
+
         PERMIT2.approve(token0(), address(router), type(uint160).max, type(uint48).max);
         PERMIT2.approve(token1(), address(router), type(uint160).max, type(uint48).max);
     }
