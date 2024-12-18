@@ -40,12 +40,16 @@ describe('Astra UX Tests gas:', () => {
   let MAX_PERMIT: PermitSingle
   let SIMPLE_SWAP_PERMIT: PermitSingle
   let COMPLEX_SWAP_PERMIT: PermitSingle
-
+  
   beforeEach(async () => {
     await resetFork()
     await hre.network.provider.request({
       method: 'hardhat_impersonateAccount',
       params: [ALICE_ADDRESS],
+    })
+    await hre.network.provider.request({
+      method: 'hardhat_setBalance',
+      params: [ALICE_ADDRESS, '0x10000000000000000000000'],
     })
     alice = await ethers.getSigner(ALICE_ADDRESS)
     bob = (await ethers.getSigners())[1]

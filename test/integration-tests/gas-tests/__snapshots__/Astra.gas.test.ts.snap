@@ -252,66 +252,101 @@ Object {
 }
 `;
 
+exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. AMB --> ERC20 gas: exactIn, one trade, one hop 1`] = `
+Object {
+  "calldataByteLength": 644,
+  "gasUsed": 152828,
+}
+`;
+
+exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. AMB --> ERC20 gas: exactOut, one trade, one hop 1`] = `
+Object {
+  "calldataByteLength": 772,
+  "gasUsed": 173516,
+}
+`;
+
+exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. ERC20 --> AMB gas: exactIn, one trade, one hop 1`] = `
+Object {
+  "calldataByteLength": 644,
+  "gasUsed": 168891,
+}
+`;
+
+exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. ERC20 --> AMB gas: exactOut, one trade, one hop 1`] = `
+Object {
+  "calldataByteLength": 804,
+  "gasUsed": 174092,
+}
+`;
+
+exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. ERC20 --> AMB gas: exactOut, with AMB fee 1`] = `
+Object {
+  "calldataByteLength": 964,
+  "gasUsed": 181986,
+}
+`;
+
 exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. ERC20 --> ERC20 gas: exactIn trade, where an output fee is taken 1`] = `
 Object {
   "calldataByteLength": 836,
-  "gasUsed": 128824,
+  "gasUsed": 165517,
 }
 `;
 
 exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. ERC20 --> ERC20 gas: exactIn, one trade, one hop 1`] = `
 Object {
   "calldataByteLength": 516,
-  "gasUsed": 109042,
+  "gasUsed": 145663,
 }
 `;
 
 exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. ERC20 --> ERC20 gas: exactIn, one trade, three hops 1`] = `
 Object {
   "calldataByteLength": 580,
-  "gasUsed": 246952,
+  "gasUsed": 328822,
 }
 `;
 
 exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. ERC20 --> ERC20 gas: exactIn, one trade, three hops, no deadline 1`] = `
 Object {
   "calldataByteLength": 548,
-  "gasUsed": 246694,
+  "gasUsed": 328564,
 }
 `;
 
 exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. ERC20 --> ERC20 gas: exactIn, one trade, two hops 1`] = `
 Object {
   "calldataByteLength": 548,
-  "gasUsed": 179686,
+  "gasUsed": 237242,
 }
 `;
 
 exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. ERC20 --> ERC20 gas: exactIn, one trade, two hops, MSG_SENDER flag 1`] = `
 Object {
   "calldataByteLength": 548,
-  "gasUsed": 179686,
+  "gasUsed": 237242,
 }
 `;
 
 exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. ERC20 --> ERC20 gas: exactOut, one trade, one hop 1`] = `
 Object {
   "calldataByteLength": 516,
-  "gasUsed": 109016,
+  "gasUsed": 151036,
 }
 `;
 
 exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. ERC20 --> ERC20 gas: exactOut, one trade, three hops 1`] = `
 Object {
   "calldataByteLength": 580,
-  "gasUsed": 252135,
+  "gasUsed": 339358,
 }
 `;
 
 exports[`Astra Gas Tests Trade on AstraClassic with Universal Router. ERC20 --> ERC20 gas: exactOut, one trade, two hops 1`] = `
 Object {
   "calldataByteLength": 548,
-  "gasUsed": 182300,
+  "gasUsed": 245196,
 }
 `;
 

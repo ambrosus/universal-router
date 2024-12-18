@@ -32,11 +32,6 @@ describe('Payments Gas Tests', () => {
   let sambContract: ISAMB
   let planner: RoutePlanner
 
-  async function deployMintableToken(name: string, symbol: string, signer: SignerWithAddress): Promise<Token> {
-    const token = await new MintableERC20__factory(signer).deploy(BigNumber.from(10).pow(18).mul('1000000000000000000'))
-    return new Token(22040, token.address, 18, name, symbol)
-  }
-
   beforeEach(async () => {
     await resetFork()
     await hre.network.provider.request({
@@ -49,11 +44,12 @@ describe('Payments Gas Tests', () => {
     })
     alice = await ethers.getSigner(ALICE_ADDRESS)
     bob = (await ethers.getSigners())[1]
-    const BOND = await deployMintableToken('Bond', 'BOND', alice)
     await (
       await MintableERC20__factory.connect(BOND.address, alice).transfer(bob.address, expandTo18DecimalsBN(100000000))
     ).wait()
     await (await ISAMB__factory.connect(SAMB.address, alice).deposit({ value: expandTo18DecimalsBN(1000) })).wait()
+    await(await ISAMB__factory.connect(SAMB.address, bob).deposit({ value: expandTo18DecimalsBN(1000) })).wait()
+    
     bondContract = ERC20__factory.connect(BOND.address, bob)
     sambContract = ISAMB__factory.connect(SAMB.address, bob)
 

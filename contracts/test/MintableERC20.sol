@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 import {ERC20} from 'solmate/src/tokens/ERC20.sol';
 
 contract MintableERC20 is ERC20 {
-    constructor(uint256 amountToMint) ERC20('test', 'TEST', 18) {
+    constructor(string memory name, string memory symbol, uint256 amountToMint) ERC20(name, symbol, 18) {
         mint(msg.sender, amountToMint);
     }
 

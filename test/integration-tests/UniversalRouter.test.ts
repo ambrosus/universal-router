@@ -15,30 +15,19 @@ import { abi as ROUTER_ABI } from '../../artifacts/contracts/UniversalRouter.sol
 import { abi as TOKEN_ABI } from '../../artifacts/solmate/src/tokens/ERC20.sol/ERC20.json'
 import { abi as SAMB_ABI } from '../../artifacts/contracts/interfaces/external/ISAMB.sol/ISAMB.json'
 
-import NFTX_ZAP_ABI from './shared/abis/NFTXZap.json'
 import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRouter'
 import {
   ADDRESS_THIS,
   ALICE_ADDRESS,
   DEADLINE,
-  OPENSEA_CONDUIT_KEY,
   ROUTER_REWARDS_DISTRIBUTOR,
   SOURCE_MSG_SENDER,
   MAX_UINT160,
   MAX_UINT,
   AMB_ADDRESS,
-  NFTX_MILADY_VAULT_ID,
 } from './shared/constants'
-import {
-  seaportOrders,
-  seaportInterface,
-  getAdvancedOrderParams,
-  AdvancedOrder,
-  Order,
-  seaportV1_4Orders,
-  seaportV1_4Interface,
-} from './shared/protocolHelpers/seaport'
-import { resetFork, SAMB, BOND, MILADY_721, COVEN_721 } from './shared/testnetForkHelpers'
+
+import { resetFork, SAMB, BOND } from './shared/testnetForkHelpers'
 import { CommandType, RoutePlanner } from './shared/planner'
 import { makePair } from './shared/swapRouter02Helpers'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
@@ -48,13 +37,7 @@ import { findCustomErrorSelector } from './shared/parseEvents'
 import { Token } from '@airdao/astra-sdk-core'
 
 const { ethers } = hre
-const nftxZapInterface = new ethers.utils.Interface(NFTX_ZAP_ABI)
 const routerInterface = new ethers.utils.Interface(ROUTER_ABI)
-
-async function deployMintableToken(name: string, symbol: string, signer: SignerWithAddress): Promise<Token> {
-  const token = await new MintableERC20__factory(signer).deploy(BigNumber.from(10).pow(18).mul('1000000000000000000'))
-  return new Token(22040, token.address, 18, name, symbol)
-}
 
 describe('UniversalRouter', () => {
   let alice: SignerWithAddress
@@ -65,7 +48,6 @@ describe('UniversalRouter', () => {
   let mockLooksRareToken: ERC20
   let mockLooksRareRewardsDistributor: MockLooksRareRewardsDistributor
   let pair_BOND_SAMB: Pair
-  let cryptoCovens: ERC721
 
   beforeEach(async () => {
     await resetFork()
@@ -82,12 +64,11 @@ describe('UniversalRouter', () => {
     // mock rewards contracts
     const tokenFactory = await ethers.getContractFactory('MintableERC20')
     const mockDistributorFactory = await ethers.getContractFactory('MockLooksRareRewardsDistributor')
-    mockLooksRareToken = (await tokenFactory.connect(alice).deploy(expandTo18DecimalsBN(5))) as ERC20
+    mockLooksRareToken = (await tokenFactory.connect(alice).deploy("LooksRare", "LR", expandTo18DecimalsBN(5))) as ERC20
     mockLooksRareRewardsDistributor = (await mockDistributorFactory.deploy(
       ROUTER_REWARDS_DISTRIBUTOR,
       mockLooksRareToken.address
     )) as MockLooksRareRewardsDistributor
-    const BOND = await deployMintableToken('Bond', 'BOND', alice)
     await (await ISAMB__factory.connect(SAMB.address, alice).deposit({ value: expandTo18DecimalsBN(1000) })).wait()
 
     bondContract = new ethers.Contract(BOND.address, TOKEN_ABI, alice) as ERC20
@@ -97,7 +78,6 @@ describe('UniversalRouter', () => {
     router = (
       await deployUniversalRouter(permit2, mockLooksRareRewardsDistributor.address, mockLooksRareToken.address)
     ).connect(alice) as UniversalRouter
-    cryptoCovens = COVEN_721.connect(alice) as ERC721
   })
 
   describe('#execute', () => {
@@ -195,68 +175,6 @@ describe('UniversalRouter', () => {
         .to.be.revertedWithCustomError(router, 'ExecutionFailed')
         .withArgs(0, customErrorSelector)
     })
-
-    describe('ERC20 --> NFT', () => {
-      let advancedOrder: AdvancedOrder
-      let value: BigNumber
-
-      beforeEach(async () => {
-        ;({ advancedOrder, value } = getAdvancedOrderParams(seaportOrders[0]))
-      })
-
-      it('completes a trade for ERC20 --> AMB --> Seaport NFT', async () => {
-        const maxAmountIn = expandTo18DecimalsBN(100_000)
-        const calldata = seaportInterface.encodeFunctionData('fulfillAdvancedOrder', [
-          advancedOrder,
-          [],
-          OPENSEA_CONDUIT_KEY,
-          alice.address,
-        ])
-
-        planner.addCommand(CommandType.CLASSIC_SWAP_EXACT_OUT, [
-          ADDRESS_THIS,
-          value,
-          maxAmountIn,
-          [BOND.address, SAMB.address],
-          SOURCE_MSG_SENDER,
-        ])
-        planner.addCommand(CommandType.UNWRAP_SAMB, [ADDRESS_THIS, value])
-        planner.addCommand(CommandType.SEAPORT_V1_5, [value.toString(), calldata])
-        const { commands, inputs } = planner
-        const covenBalanceBefore = await cryptoCovens.balanceOf(alice.address)
-        await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)
-        const covenBalanceAfter = await cryptoCovens.balanceOf(alice.address)
-        expect(covenBalanceAfter.sub(covenBalanceBefore)).to.eq(1)
-      })
-
-      it('completes a trade for SAMB --> AMB --> Seaport NFT', async () => {
-        const calldata = seaportInterface.encodeFunctionData('fulfillAdvancedOrder', [
-          advancedOrder,
-          [],
-          OPENSEA_CONDUIT_KEY,
-          alice.address,
-        ])
-
-        planner.addCommand(CommandType.PERMIT2_TRANSFER_FROM, [SAMB.address, ADDRESS_THIS, value])
-        planner.addCommand(CommandType.UNWRAP_SAMB, [ADDRESS_THIS, value])
-        planner.addCommand(CommandType.SEAPORT_V1_5, [value.toString(), calldata])
-
-        const { commands, inputs } = planner
-        const covenBalanceBefore = await cryptoCovens.balanceOf(alice.address)
-        const sambBalanceBefore = await sambContract.balanceOf(alice.address)
-
-        await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE)).to.changeEtherBalance(
-          alice,
-          0
-        )
-
-        const covenBalanceAfter = await cryptoCovens.balanceOf(alice.address)
-        const sambBalanceAfter = await sambContract.balanceOf(alice.address)
-
-        expect(covenBalanceAfter.sub(covenBalanceBefore)).to.eq(1)
-        expect(sambBalanceBefore.sub(sambBalanceAfter)).to.eq(value)
-      })
-    })
   })
 
   describe('#collectRewards', () => {
@@ -307,73 +225,5 @@ describe('UniversalRouter newer block', () => {
     router = (
       await deployUniversalRouter(permit2, mockLooksRareRewardsDistributor.address, mockLooksRareToken.address)
     ).connect(alice) as UniversalRouter
-  })
-
-  describe('#execute', () => {
-    let planner: RoutePlanner
-
-    beforeEach(() => {
-      planner = new RoutePlanner()
-    })
-
-    describe('partial fills', async () => {
-      let nftxValue: BigNumber
-      let numMiladys: number
-      let value: BigNumber
-      let invalidSeaportCalldata: string
-      let seaportValue: BigNumber
-      let miladyContract: ERC721
-
-      beforeEach(async () => {
-        miladyContract = MILADY_721.connect(alice) as ERC721
-
-        // add valid nftx order to planner
-        nftxValue = expandTo18DecimalsBN(2.036523961400441269)
-        numMiladys = 1
-        const calldata = nftxZapInterface.encodeFunctionData('buyAndRedeem', [
-          NFTX_MILADY_VAULT_ID,
-          numMiladys,
-          [],
-          '0xd9627aa400000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000001bfb8d0ff32c43470000000000000000000000000000000000000000000000000e27c49886e6000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000227c7df69d3ed1ae7574a1a7685fded90292eb48869584cd00000000000000000000000010000000000000000000000000000000000000110000000000000000000000000000000000000000000000465b3a7f1b643618cb',
-          alice.address,
-        ])
-        planner.addCommand(CommandType.NFTX, [nftxValue, calldata])
-
-        let invalidSeaportOrder = JSON.parse(JSON.stringify(seaportV1_4Orders[1]))
-        invalidSeaportOrder.protocol_data.signature = '0xdeadbeef'
-        let seaportOrder: Order
-        ;({ advancedOrder: seaportOrder, value: seaportValue } = getAdvancedOrderParams(invalidSeaportOrder))
-        invalidSeaportCalldata = seaportV1_4Interface.encodeFunctionData('fulfillAdvancedOrder', [
-          seaportOrder,
-          [],
-          OPENSEA_CONDUIT_KEY,
-          alice.address,
-        ])
-
-        value = seaportValue.add(nftxValue)
-      })
-
-      it('reverts if no commands are allowed to revert', async () => {
-        planner.addCommand(CommandType.SEAPORT_V1_4, [seaportValue, invalidSeaportCalldata])
-
-        const { commands, inputs } = planner
-
-        const testCustomErrors = await (await ethers.getContractFactory('TestCustomErrors')).deploy()
-        const customErrorSelector = findCustomErrorSelector(testCustomErrors.interface, 'InvalidSignature')
-        await expect(router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value }))
-          .to.be.revertedWithCustomError(router, 'ExecutionFailed')
-          .withArgs(1, customErrorSelector)
-      })
-
-      it('does not revert if invalid seaport transaction allowed to fail', async () => {
-        planner.addCommand(CommandType.SEAPORT_V1_4, [seaportValue, invalidSeaportCalldata], true)
-        const { commands, inputs } = planner
-
-        const miladyBalanceBefore = await miladyContract.balanceOf(alice.address)
-        await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value })
-        const miladyBalanceAfter = await miladyContract.balanceOf(alice.address)
-        expect(miladyBalanceAfter.sub(miladyBalanceBefore)).to.eq(numMiladys)
-      })
-    })
   })
 })

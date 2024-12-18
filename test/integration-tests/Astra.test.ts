@@ -1,21 +1,19 @@
-import type { Contract } from '@ethersproject/contracts'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { Pair } from '@airdao/astra-classic-sdk'
 import { FeeAmount } from '@airdao/astra-cl-sdk'
 import { parseEvents, CLASSIC_EVENTS, CL_EVENTS } from './shared/parseEvents'
 import { expect } from './shared/expect'
 import { encodePath } from './shared/swapRouter02Helpers'
-import { BigNumber, BigNumberish } from 'ethers'
+import { BigNumber, BigNumberish, Contract } from 'ethers'
 import {
   ERC20,
   ERC20__factory,
   ISAMB,
   ISAMB__factory,
-  MintableERC20__factory,
   Permit2,
   UniversalRouter,
 } from '../../typechain'
-import { resetFork, SAMB, BOND, USDC, KOS } from './shared/testnetForkHelpers'
+import { BOND, KOS, resetFork, SAMB, USDC } from './shared/testnetForkHelpers'
 import {
   ADDRESS_THIS,
   ALICE_ADDRESS,
@@ -28,6 +26,7 @@ import {
   ONE_PERCENT_BIPS,
   SOURCE_MSG_SENDER,
   SOURCE_ROUTER,
+  TOKEN_ABI,
 } from './shared/constants'
 import { expandTo18DecimalsBN, expandTo6DecimalsBN } from './shared/helpers'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
@@ -35,7 +34,6 @@ import deployUniversalRouter, { deployPermit2 } from './shared/deployUniversalRo
 import { RoutePlanner, CommandType } from './shared/planner'
 import hre from 'hardhat'
 import { getPermitSignature, getPermitBatchSignature, PermitSingle } from './shared/protocolHelpers/permit2'
-import { Token } from '@airdao/astra-sdk-core'
 const { ethers } = hre
 
 describe('Astra Classic and CL Tests:', () => {
@@ -43,15 +41,26 @@ describe('Astra Classic and CL Tests:', () => {
   let bob: SignerWithAddress
   let router: UniversalRouter
   let permit2: Permit2
-  let bondContract: ERC20
+  let bondContract: Contract
   let sambContract: ISAMB
   let usdcContract: ERC20
   let planner: RoutePlanner
 
-  async function deployMintableToken(name: string, symbol: string, signer: SignerWithAddress): Promise<Token> {
-    const token = await new MintableERC20__factory(signer).deploy(BigNumber.from(10).pow(18).mul('1000000000000000000'))
-    return new Token(22040, token.address, 18, name, symbol)
-  }
+  before(async () => {
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [ALICE_ADDRESS],
+    })
+    await hre.network.provider.request({
+      method: 'hardhat_setBalance',
+      params: [ALICE_ADDRESS, '0x10000000000000000000000'],
+    })
+    alice = await ethers.getSigner(ALICE_ADDRESS)
+    bob = (await ethers.getSigners())[1]
+    bondContract = ERC20__factory.connect(BOND.address, bob)
+    sambContract = ISAMB__factory.connect(SAMB.address, bob)
+    usdcContract = ERC20__factory.connect(USDC.address, bob)
+  })
 
   beforeEach(async () => {
     await resetFork()
@@ -65,19 +74,9 @@ describe('Astra Classic and CL Tests:', () => {
       params: [ALICE_ADDRESS, '0x10000000000000000000000'],
     })
     bob = (await ethers.getSigners())[1]
-    const bC = await deployMintableToken('Bond', 'BOND', alice)
-    const uC = await deployMintableToken('USDC', 'USDC', alice)
-    await (
-      await MintableERC20__factory.connect(bC.address, alice).transfer(bob.address, expandTo18DecimalsBN(100000000))
-    ).wait()
-    await (
-      await MintableERC20__factory.connect(uC.address, alice).transfer(bob.address, expandTo6DecimalsBN(100000000))
-    ).wait()
-    await (await ISAMB__factory.connect(SAMB.address, alice).deposit({ value: expandTo18DecimalsBN(1000) })).wait()
-    bondContract = ERC20__factory.connect(bC.address, bob)
-    sambContract = ISAMB__factory.connect(SAMB.address, bob)
-
-    usdcContract = ERC20__factory.connect(uC.address, bob)
+    await ISAMB__factory.connect(SAMB.address, alice)
+      .deposit({ value: expandTo18DecimalsBN(1000) })
+      .then(async (t) => await t.wait())
     permit2 = (await deployPermit2()).connect(bob) as Permit2
     router = (await deployUniversalRouter(permit2)).connect(bob) as UniversalRouter
     planner = new RoutePlanner()
@@ -98,14 +97,14 @@ describe('Astra Classic and CL Tests:', () => {
       let permit: PermitSingle
 
       it('Classic exactIn, permiting the exact amount', async () => {
-        const amountInDAI = expandTo18DecimalsBN(100)
+        const amountInBOND = expandTo18DecimalsBN(100)
         const minAmountOutSAMB = expandTo18DecimalsBN(0.03)
 
         // second bob signs a permit to allow the router to access his BOND
         permit = {
           details: {
             token: BOND.address,
-            amount: amountInDAI,
+            amount: amountInBOND,
             expiration: 0, // expiration of 0 is block.timestamp
             nonce: 0, // this is his first trade
           },
@@ -117,7 +116,7 @@ describe('Astra Classic and CL Tests:', () => {
         planner.addCommand(CommandType.PERMIT2_PERMIT, [permit, sig])
         planner.addCommand(CommandType.CLASSIC_SWAP_EXACT_IN, [
           MSG_SENDER,
-          amountInDAI,
+          amountInBOND,
           minAmountOutSAMB,
           [BOND.address, SAMB.address],
           SOURCE_MSG_SENDER,
@@ -126,18 +125,18 @@ describe('Astra Classic and CL Tests:', () => {
           planner
         )
         expect(sambBalanceAfter.sub(sambBalanceBefore)).to.be.gte(minAmountOutSAMB)
-        expect(bondBalanceBefore.sub(bondBalanceAfter)).to.be.eq(amountInDAI)
+        expect(bondBalanceBefore.sub(bondBalanceAfter)).to.be.eq(amountInBOND)
       })
 
       it('Classic exactOut, permiting the maxAmountIn', async () => {
-        const maxAmountInDAI = expandTo18DecimalsBN(3000)
+        const maxAmountInBOND = expandTo18DecimalsBN(3000)
         const amountOutSAMB = expandTo18DecimalsBN(1)
 
         // second bob signs a permit to allow the router to access his BOND
         permit = {
           details: {
             token: BOND.address,
-            amount: maxAmountInDAI,
+            amount: maxAmountInBOND,
             expiration: 0, // expiration of 0 is block.timestamp
             nonce: 0, // this is his first trade
           },
@@ -151,7 +150,7 @@ describe('Astra Classic and CL Tests:', () => {
         planner.addCommand(CommandType.CLASSIC_SWAP_EXACT_OUT, [
           MSG_SENDER,
           amountOutSAMB,
-          maxAmountInDAI,
+          maxAmountInBOND,
           [BOND.address, SAMB.address],
           SOURCE_MSG_SENDER,
         ])
@@ -159,7 +158,7 @@ describe('Astra Classic and CL Tests:', () => {
           planner
         )
         expect(sambBalanceAfter.sub(sambBalanceBefore)).to.be.eq(amountOutSAMB)
-        expect(bondBalanceBefore.sub(bondBalanceAfter)).to.be.lte(maxAmountInDAI)
+        expect(bondBalanceBefore.sub(bondBalanceAfter)).to.be.lte(maxAmountInBOND)
       })
 
       it('Classic exactIn, swapping more than max_uint160 should revert', async () => {
@@ -194,7 +193,7 @@ describe('Astra Classic and CL Tests:', () => {
       })
 
       it('CL exactIn, permiting the exact amount', async () => {
-        const amountInDAI = expandTo18DecimalsBN(100)
+        const amountInBOND = expandTo18DecimalsBN(100)
         const minAmountOutSAMB = expandTo18DecimalsBN(0.03)
 
         // first bob approves permit2 to access his BOND
@@ -204,7 +203,7 @@ describe('Astra Classic and CL Tests:', () => {
         permit = {
           details: {
             token: BOND.address,
-            amount: amountInDAI,
+            amount: amountInBOND,
             expiration: 0, // expiration of 0 is block.timestamp
             nonce: 0, // this is his first trade
           },
@@ -219,7 +218,7 @@ describe('Astra Classic and CL Tests:', () => {
         planner.addCommand(CommandType.PERMIT2_PERMIT, [permit, sig])
         planner.addCommand(CommandType.CL_SWAP_EXACT_IN, [
           MSG_SENDER,
-          amountInDAI,
+          amountInBOND,
           minAmountOutSAMB,
           path,
           SOURCE_MSG_SENDER,
@@ -228,11 +227,11 @@ describe('Astra Classic and CL Tests:', () => {
           planner
         )
         expect(sambBalanceAfter.sub(sambBalanceBefore)).to.be.gte(minAmountOutSAMB)
-        expect(bondBalanceBefore.sub(bondBalanceAfter)).to.be.eq(amountInDAI)
+        expect(bondBalanceBefore.sub(bondBalanceAfter)).to.be.eq(amountInBOND)
       })
 
       it('CL exactOut, permiting the exact amount', async () => {
-        const maxAmountInDAI = expandTo18DecimalsBN(3000)
+        const maxAmountInBOND = expandTo18DecimalsBN(3000)
         const amountOutSAMB = expandTo18DecimalsBN(1)
 
         // first bob approves permit2 to access his BOND
@@ -242,7 +241,7 @@ describe('Astra Classic and CL Tests:', () => {
         permit = {
           details: {
             token: BOND.address,
-            amount: maxAmountInDAI,
+            amount: maxAmountInBOND,
             expiration: 0, // expiration of 0 is block.timestamp
             nonce: 0, // this is his first trade
           },
@@ -258,7 +257,7 @@ describe('Astra Classic and CL Tests:', () => {
         planner.addCommand(CommandType.CL_SWAP_EXACT_OUT, [
           MSG_SENDER,
           amountOutSAMB,
-          maxAmountInDAI,
+          maxAmountInBOND,
           path,
           SOURCE_MSG_SENDER,
         ])
@@ -266,7 +265,7 @@ describe('Astra Classic and CL Tests:', () => {
           planner
         )
         expect(sambBalanceAfter.sub(sambBalanceBefore)).to.be.eq(amountOutSAMB)
-        expect(bondBalanceBefore.sub(bondBalanceAfter)).to.be.lte(maxAmountInDAI)
+        expect(bondBalanceBefore.sub(bondBalanceAfter)).to.be.lte(maxAmountInBOND)
       })
     })
   })
@@ -364,10 +363,10 @@ describe('Astra Classic and CL Tests:', () => {
         ])
         planner.addCommand(CommandType.UNWRAP_SAMB, [MSG_SENDER, 0])
 
-        const { gasSpent, ethBalanceBefore, ethBalanceAfter, classicSwapEventArgs } = await executeRouter(planner)
-        const { amount1Out: sambTraded } = classicSwapEventArgs!
-
-        expect(ethBalanceAfter.sub(ethBalanceBefore)).to.eq(sambTraded.sub(gasSpent))
+        const { gasSpent, ambBalanceBefore, ambBalanceAfter, classicSwapEventArgs } = await executeRouter(planner)
+        const { amount0Out: sambTraded } = classicSwapEventArgs!
+        
+        expect(ambBalanceAfter.sub(ambBalanceBefore)).to.eq(sambTraded.sub(gasSpent))
       })
 
       it('completes a Classic exactOut swap', async () => {
@@ -382,9 +381,9 @@ describe('Astra Classic and CL Tests:', () => {
         planner.addCommand(CommandType.UNWRAP_SAMB, [MSG_SENDER, amountOut])
         planner.addCommand(CommandType.SWEEP, [BOND.address, MSG_SENDER, 0])
 
-        const { gasSpent, ethBalanceBefore, ethBalanceAfter, classicSwapEventArgs } = await executeRouter(planner)
-        const { amount1Out: sambTraded } = classicSwapEventArgs!
-        expect(ethBalanceAfter.sub(ethBalanceBefore)).to.eq(amountOut.sub(gasSpent))
+        const { gasSpent, ambBalanceBefore, ambBalanceAfter, classicSwapEventArgs } = await executeRouter(planner)
+        const { amount0Out: sambTraded } = classicSwapEventArgs!
+        expect(ambBalanceAfter.sub(ambBalanceBefore)).to.eq(amountOut.sub(gasSpent))
         expect(sambTraded).to.eq(amountOut)
       })
 
@@ -415,7 +414,7 @@ describe('Astra Classic and CL Tests:', () => {
 
     describe('AMB --> ERC20', () => {
       it('completes a Classic exactIn swap', async () => {
-        const minAmountOut = expandTo18DecimalsBN(0.001)
+        const minAmountOut = expandTo18DecimalsBN(49)
         const pairAddress = Pair.getAddress(BOND, SAMB)
         planner.addCommand(CommandType.WRAP_AMB, [pairAddress, amountIn])
         // amountIn of 0 because the samb is already in the pair
@@ -428,7 +427,7 @@ describe('Astra Classic and CL Tests:', () => {
         ])
 
         const { bondBalanceBefore, bondBalanceAfter, classicSwapEventArgs } = await executeRouter(planner, amountIn)
-        const { amount0Out: bondTraded } = classicSwapEventArgs!
+        const { amount1Out: bondTraded } = classicSwapEventArgs!
 
         expect(bondBalanceAfter.sub(bondBalanceBefore)).to.be.gt(minAmountOut)
         expect(bondBalanceAfter.sub(bondBalanceBefore)).to.equal(bondTraded)
@@ -436,30 +435,30 @@ describe('Astra Classic and CL Tests:', () => {
 
       it('completes a Classic exactOut swap', async () => {
         const amountOut = expandTo18DecimalsBN(100)
-        const value = expandTo18DecimalsBN(1)
+        const value = expandTo18DecimalsBN(11)
 
         planner.addCommand(CommandType.WRAP_AMB, [ADDRESS_THIS, value])
         planner.addCommand(CommandType.CLASSIC_SWAP_EXACT_OUT, [
           MSG_SENDER,
           amountOut,
-          expandTo18DecimalsBN(1),
+          expandTo18DecimalsBN(11),
           [SAMB.address, BOND.address],
           SOURCE_ROUTER,
         ])
         planner.addCommand(CommandType.UNWRAP_SAMB, [MSG_SENDER, 0])
 
         const {
-          ethBalanceBefore,
-          ethBalanceAfter,
+          ambBalanceBefore,
+          ambBalanceAfter,
           bondBalanceBefore,
           bondBalanceAfter,
           classicSwapEventArgs,
           gasSpent,
         } = await executeRouter(planner, value)
-        const { amount0Out: bondTraded, amount1In: sambTraded } = classicSwapEventArgs!
+        const { amount1Out: bondTraded, amount0In: sambTraded } = classicSwapEventArgs!
         expect(bondBalanceAfter.sub(bondBalanceBefore)).gt(amountOut) // rounding
         expect(bondBalanceAfter.sub(bondBalanceBefore)).eq(bondTraded)
-        expect(ethBalanceBefore.sub(ethBalanceAfter)).to.eq(sambTraded.add(gasSpent))
+        expect(ambBalanceBefore.sub(ambBalanceAfter)).to.eq(sambTraded.add(gasSpent))
       })
     })
   })
@@ -1040,14 +1039,16 @@ describe('Astra Classic and CL Tests:', () => {
 
       describe('Batch reverts', () => {
         let subplan: RoutePlanner
-        const planOneTokens = [BOND.address, SAMB.address]
-        const planTwoTokens = [USDC.address, SAMB.address]
+        let planOneTokens: string[]
+        let planTwoTokens: string[]
         const planOneClassicAmountIn: BigNumber = expandTo18DecimalsBN(2)
         const planOneCLAmountIn: BigNumber = expandTo18DecimalsBN(3)
         const planTwoCLAmountIn = expandTo6DecimalsBN(5)
 
         beforeEach(async () => {
           subplan = new RoutePlanner()
+          planOneTokens = [BOND.address, SAMB.address]
+          planTwoTokens = [USDC.address, SAMB.address]
         })
 
         it('2 sub-plans, neither fails', async () => {
@@ -1283,8 +1284,8 @@ describe('Astra Classic and CL Tests:', () => {
     bondBalanceAfter: BigNumber
     usdcBalanceBefore: BigNumber
     usdcBalanceAfter: BigNumber
-    ethBalanceBefore: BigNumber
-    ethBalanceAfter: BigNumber
+    ambBalanceBefore: BigNumber
+    ambBalanceAfter: BigNumber
     classicSwapEventArgs: ClassicSwapEventArgs | undefined
     clSwapEventArgs: CLSwapEventArgs | undefined
     receipt: TransactionReceipt
@@ -1292,11 +1293,11 @@ describe('Astra Classic and CL Tests:', () => {
   }
 
   async function executeRouter(planner: RoutePlanner, value?: BigNumberish): Promise<ExecutionParams> {
-    const ethBalanceBefore: BigNumber = await ethers.provider.getBalance(bob.address)
+    const ambBalanceBefore: BigNumber = await ethers.provider.getBalance(bob.address)
     const sambBalanceBefore: BigNumber = await sambContract.balanceOf(bob.address)
-    const bondBalanceBefore: BigNumber = await bondContract.balanceOf(bob.address)
     const usdcBalanceBefore: BigNumber = await usdcContract.balanceOf(bob.address)
-
+    const bondBalanceBefore: BigNumber = await bondContract.balanceOf(bob.address)
+    
     const { commands, inputs } = planner
     const tx = await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value })
     const receipt = await tx.wait()
@@ -1304,7 +1305,7 @@ describe('Astra Classic and CL Tests:', () => {
     const classicSwapEventArgs = parseEvents(CLASSIC_EVENTS, receipt)[0]?.args as unknown as ClassicSwapEventArgs
     const clSwapEventArgs = parseEvents(CL_EVENTS, receipt)[0]?.args as unknown as CLSwapEventArgs
 
-    const ethBalanceAfter: BigNumber = await ethers.provider.getBalance(bob.address)
+    const ambBalanceAfter: BigNumber = await ethers.provider.getBalance(bob.address)
     const sambBalanceAfter: BigNumber = await sambContract.balanceOf(bob.address)
     const bondBalanceAfter: BigNumber = await bondContract.balanceOf(bob.address)
     const usdcBalanceAfter: BigNumber = await usdcContract.balanceOf(bob.address)
@@ -1316,8 +1317,8 @@ describe('Astra Classic and CL Tests:', () => {
       bondBalanceAfter,
       usdcBalanceBefore,
       usdcBalanceAfter,
-      ethBalanceBefore,
-      ethBalanceAfter,
+      ambBalanceBefore,
+      ambBalanceAfter,
       classicSwapEventArgs,
       clSwapEventArgs,
       receipt,

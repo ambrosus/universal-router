@@ -1,19 +1,4 @@
-import { ERC721, ERC1155, ERC20, ERC20__factory, MintableERC20__factory } from '../../../typechain'
-import { abi as ERC721_ABI } from '../../../artifacts/solmate/src/tokens/ERC721.sol/ERC721.json'
-import { abi as ERC1155_ABI } from '../../../artifacts/solmate/src/tokens/ERC1155.sol/ERC1155.json'
-import CRYPTOPUNKS_ABI from './abis/Cryptopunks.json'
-import {
-  ALPHABETTIES_ADDRESS,
-  CAMEO_ADDRESS,
-  COVEN_ADDRESS,
-  ENS_NFT_ADDRESS,
-  MENTAL_WORLDS_ADDRESS,
-  TWERKY_ADDRESS,
-  CRYPTOPUNKS_MARKET_ADDRESS,
-  DECENTRA_DRAGON_ADDRESS,
-  TOWNSTAR_ADDRESS,
-  MILADY_ADDRESS,
-} from './constants'
+import { ERC20, ERC20__factory } from '../../../typechain'
 // TODO: use imports from @airdao scoped contracts
 import { abi as CLASSIC_PAIR_ABI } from '@airdao/astra-contracts/artifacts/contracts/core/interfaces/IAstraPair.sol/IAstraPair.json'
 import { Currency, Token, SAMB as SAMBT } from '@airdao/astra-sdk-core'
@@ -26,10 +11,9 @@ import { Pair } from '@airdao/astra-classic-sdk'
 const { ethers } = hre
 
 export const SAMB = SAMBT[22040]
-export const BOND = new Token(22040, '0x765e3e03f8dfca312EfdAb378e386E1EA60ee93F', 18, 'BOND', 'Bond coin')
-export const USDC = new Token(22040, '0xdd82283Fc93Aa4373B6B27a7B25EB3A770fc3aba', 18, 'USDC', 'USD//C')
-export const AST = new Token(22040, '0x24f3811961685888c7a1966cAec194e5444bfC0D', 18, 'AST', 'Astra Token')
-export const KOS = new Token(22040, '0xAedD2bf3Aa338088C5024f5A92bBc708C0073BF0', 18, 'KOS', 'Kosmos Token')
+export const BOND = new Token(22040, '0xf2d8C5D1a7B4fAaf5Fd81e4CE14DbD3d0fEb70a9', 18, 'BOND', 'Bond coin')
+export const USDC = new Token(22040, '0x561f21226fAA48224336Da90A500b6abA9D73694', 18, 'USDC', 'USD//C')
+export const KOS = new Token(22040, '0x51647f3659638e9458cE934C666DAd3ede59cb5E', 18, 'KOS', 'Kosmos Token')
 export const SWAP_ROUTER_CLASSIC = '0xA3E524dFc9deA66aE32e81a5E2B4DF24F56e2CBc '
 export const CLASSIC_FACTORY = 0x7bf4227edfaa6823ad577dc198dbcadecccbeb07
 
@@ -82,7 +66,7 @@ export const approveAndExecuteSwapRouter02 = async (
     to: SWAP_ROUTER_CLASSIC,
     value: BigNumber.from(methodParameters.value),
     from: alice.address,
-    gasPrice: BigNumber.from(2000000000000),
+    gasPrice: 0, //BigNumber.from(2000000000000),
     type: 1,
   }
 
@@ -99,7 +83,7 @@ export const executeSwapRouter02Swap = async (
     to: SWAP_ROUTER_CLASSIC,
     value: BigNumber.from(methodParameters.value),
     from: alice.address,
-    gasPrice: BigNumber.from(2000000000000),
+    gasPrice: 0, // BigNumber.from(2000000000000),
     type: 1,
   }
 
@@ -107,11 +91,14 @@ export const executeSwapRouter02Swap = async (
   return transactionResponse
 }
 
-export const resetFork = async (block: number = 2765038) => {
+export const resetFork = async (block: number = 2811484) => {
   await hre.network.provider.request({
     method: 'hardhat_reset',
     params: [
       {
+        gasMultiplier: 2,
+        gasPrice: 0,
+        initialBaseFeePerGas: 0,
         forking: {
           jsonRpcUrl: `https://network-archive.ambrosus-test.io`,
           blockNumber: block,
@@ -125,14 +112,3 @@ export const resetFork = async (block: number = 2765038) => {
     ],
   })
 }
-
-export const COVEN_721 = new ethers.Contract(COVEN_ADDRESS, ERC721_ABI) as ERC721
-export const DRAGON_721 = new ethers.Contract(DECENTRA_DRAGON_ADDRESS, ERC721_ABI) as ERC721
-export const MILADY_721 = new ethers.Contract(MILADY_ADDRESS, ERC721_ABI) as ERC721
-export const ENS_721 = new ethers.Contract(ENS_NFT_ADDRESS, ERC721_ABI) as ERC721
-export const MENTAL_WORLDS_721 = new ethers.Contract(MENTAL_WORLDS_ADDRESS, ERC721_ABI) as ERC721
-export const ALPHABETTIES_721 = new ethers.Contract(ALPHABETTIES_ADDRESS, ERC721_ABI) as ERC721
-export const TWERKY_1155 = new ethers.Contract(TWERKY_ADDRESS, ERC1155_ABI) as ERC1155
-export const CAMEO_1155 = new ethers.Contract(CAMEO_ADDRESS, ERC1155_ABI) as ERC1155
-export const TOWNSTAR_1155 = new ethers.Contract(TOWNSTAR_ADDRESS, ERC1155_ABI) as ERC1155
-export const CRYPTOPUNKS_MARKET = new ethers.Contract(CRYPTOPUNKS_MARKET_ADDRESS, CRYPTOPUNKS_ABI)

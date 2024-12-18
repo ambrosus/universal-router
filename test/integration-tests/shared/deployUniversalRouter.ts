@@ -7,8 +7,7 @@ import {
   CLASSIC_INIT_CODE_HASH_TESTNET,
   CL_INIT_CODE_HASH_TESTNET,
   ROUTER_REWARDS_DISTRIBUTOR,
-  LOOKSRARE_REWARDS_DISTRIBUTOR,
-  LOOKSRARE_TOKEN,
+  UNSUPPORTED_PROTOCOL
 } from './constants'
 
 export async function deployRouter(
@@ -19,21 +18,21 @@ export async function deployRouter(
 ): Promise<UniversalRouter> {
   const routerParameters = {
     permit2: permit2.address,
-    samb: '0x8D3e03889bFCb859B2dBEB65C60a52Ad9523512c',
-    seaportV1_5: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7', // need to update to v1.5 for tests once data is available
-    seaportV1_4: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
-    openseaConduit: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
-    nftxZap: mockReentrantProtocol ?? '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
-    x2y2: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
-    foundation: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
-    sudoswap: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
-    elementMarket: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
-    nft20Zap: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
-    cryptopunks: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
-    looksRareV2: '0xc3d3a94A6A29FCBC1cf86B8264AAA933B96bb5A7',
+    samb: '0x2Cf845b49e1c4E5D657fbBF36E97B7B5B7B7b74b',
+    seaportV1_5: UNSUPPORTED_PROTOCOL, // need to update to v1.5 for tests once data is available
+    seaportV1_4: UNSUPPORTED_PROTOCOL,
+    openseaConduit: UNSUPPORTED_PROTOCOL,
+    nftxZap: mockReentrantProtocol ?? UNSUPPORTED_PROTOCOL,
+    x2y2: UNSUPPORTED_PROTOCOL,
+    foundation: UNSUPPORTED_PROTOCOL,
+    sudoswap: UNSUPPORTED_PROTOCOL,
+    elementMarket: UNSUPPORTED_PROTOCOL,
+    nft20Zap: UNSUPPORTED_PROTOCOL,
+    cryptopunks: UNSUPPORTED_PROTOCOL,
+    looksRareV2: UNSUPPORTED_PROTOCOL,
     routerRewardsDistributor: ROUTER_REWARDS_DISTRIBUTOR,
-    looksRareRewardsDistributor: mockLooksRareRewardsDistributor ?? LOOKSRARE_REWARDS_DISTRIBUTOR,
-    looksRareToken: mockLooksRareToken ?? LOOKSRARE_TOKEN,
+    looksRareRewardsDistributor: mockLooksRareRewardsDistributor ?? UNSUPPORTED_PROTOCOL,
+    looksRareToken: mockLooksRareToken ?? UNSUPPORTED_PROTOCOL,
     classicFactory: CLASSIC_FACTORY_TESTNET,
     clFactory: CL_FACTORY_TESTNET,
     pairInitCodeHash: CLASSIC_INIT_CODE_HASH_TESTNET,
@@ -41,7 +40,10 @@ export async function deployRouter(
   }
 
   const routerFactory = await ethers.getContractFactory('UniversalRouter')
-  const router = (await routerFactory.deploy(routerParameters)) as unknown as UniversalRouter
+  const router = (await routerFactory.deploy(routerParameters).then(async (instance) => {
+    await instance.deployed()
+    return instance
+  })) as unknown as UniversalRouter
   return router
 }
 
@@ -49,7 +51,10 @@ export default deployRouter
 
 export async function deployPermit2(): Promise<Permit2> {
   const permit2Factory = await ethers.getContractFactory('Permit2')
-  const permit2 = (await permit2Factory.deploy()) as unknown as Permit2
+  const permit2 = (await permit2Factory.deploy().then(async (instance) => {
+    await instance.deployed()
+    return instance
+  })) as unknown as Permit2
   return permit2
 }
 

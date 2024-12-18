@@ -1,4 +1,3 @@
-import type { Contract } from '@ethersproject/contracts'
 import { CurrencyAmount, Amber, Percent, Token, TradeType } from '@airdao/astra-sdk-core'
 import { Route as ClassicRouteSDK, Pair } from '@airdao/astra-classic-sdk'
 import { Route as CLRouteSDK, FeeAmount } from '@airdao/astra-cl-sdk'
@@ -22,11 +21,9 @@ import {
   Permit2,
   ISAMB,
   ERC20,
-  MintableERC20__factory,
   ISAMB__factory,
   ERC20__factory,
 } from '../../../typechain'
-import { abi as TOKEN_ABI } from '../../../artifacts/solmate/src/tokens/ERC20.sol/ERC20.json'
 import { approveAndExecuteSwapRouter02, resetFork, SAMB, BOND, USDC, KOS } from '../shared/testnetForkHelpers'
 import {
   ADDRESS_THIS,
@@ -70,11 +67,6 @@ describe('Astra Gas Tests', () => {
   let pair_BOND_USDC: Pair
   let pair_USDC_SAMB: Pair
 
-  async function deployMintableToken(name: string, symbol: string, signer: SignerWithAddress): Promise<Token> {
-    const token = await new MintableERC20__factory(signer).deploy(BigNumber.from(10).pow(18).mul('1000000000000000000'))
-    return new Token(22040, token.address, 18, name, symbol)
-  }
-
   beforeEach(async () => {
     await resetFork()
     await hre.network.provider.request({
@@ -87,14 +79,6 @@ describe('Astra Gas Tests', () => {
       params: [ALICE_ADDRESS, '0x10000000000000000000000'],
     })
     bob = (await ethers.getSigners())[1]
-    const BOND = await deployMintableToken('Bond', 'BOND', alice)
-    const USDC = await deployMintableToken('USDC', 'USDC', alice)
-    await (
-      await MintableERC20__factory.connect(BOND.address, alice).transfer(bob.address, expandTo18DecimalsBN(100000000))
-    ).wait()
-    await (
-      await MintableERC20__factory.connect(USDC.address, alice).transfer(bob.address, expandTo6DecimalsBN(100000000))
-    ).wait()
     await (await ISAMB__factory.connect(SAMB.address, alice).deposit({ value: expandTo18DecimalsBN(1000) })).wait()
     bondContract = ERC20__factory.connect(BOND.address, bob)
     usdcContract = ERC20__factory.connect(USDC.address, bob)
@@ -415,13 +399,13 @@ describe('Astra Gas Tests', () => {
 
         it('gas: exactOut, one trade, one hop', async () => {
           const amountOut = expandTo18DecimalsBN(100)
-          const value = expandTo18DecimalsBN(1)
+          const value = expandTo18DecimalsBN(11)
 
           planner.addCommand(CommandType.WRAP_AMB, [ADDRESS_THIS, value])
           planner.addCommand(CommandType.CLASSIC_SWAP_EXACT_OUT, [
             MSG_SENDER,
             amountOut,
-            expandTo18DecimalsBN(1),
+            expandTo18DecimalsBN(11),
             [SAMB.address, BOND.address],
             SOURCE_ROUTER,
           ])

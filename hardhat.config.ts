@@ -1,7 +1,7 @@
-import 'hardhat-typechain'
 import '@nomiclabs/hardhat-ethers'
 import '@nomicfoundation/hardhat-foundry'
 import '@nomicfoundation/hardhat-chai-matchers'
+import '@typechain/hardhat'
 import dotenv from 'dotenv'
 dotenv.config()
 const HASH_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -22,17 +22,24 @@ const DEFAULT_COMPILER_SETTINGS = {
 }
 
 export default {
+  typechain: {
+    outDir: 'typechain',
+    target: 'ethers-v5',
+  },
   paths: {
     sources: './contracts',
   },
   networks: {
     hardhat: {
       // loggingEnabled: true,
+      gasMultiplier: 2,
+      gasPrice: 0,
+      initialBaseFeePerGas: 0,
       allowUnlimitedContractSize: false,
       chainId: 22040,
       forking: {
         url: `https://network-archive.ambrosus-test.io`,
-        blockNumber: 2765038,
+        blockNumber: 2811484,
         chains: {
           22040: {
             istanbul: 2760000,

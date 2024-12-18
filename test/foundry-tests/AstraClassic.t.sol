@@ -20,7 +20,7 @@ abstract contract AstraClassicTest is Test {
     uint256 constant AMOUNT = 1 ether;
     uint256 constant BALANCE = 100000 ether;
     IAstraFactory constant FACTORY = IAstraFactory(0x7bf4227eDfAA6823aD577dc198DbCadECccbEb07);
-    ERC20 constant SAMB = ERC20(0x8D3e03889bFCb859B2dBEB65C60a52Ad9523512c);
+    ERC20 constant SAMB = ERC20(0x2Cf845b49e1c4E5D657fbBF36E97B7B5B7B7b74b);
     Permit2 constant PERMIT2 = Permit2(0x2B75bF9B8ec5966832c123bc24Db3a283E3C1be4);
     address constant FROM = address(1234);
 
