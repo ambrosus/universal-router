@@ -1,5 +1,5 @@
 {
-  "name": "@airdao/universal-router",
+  "name": "@airdao/astra-universal-router",
   "description": "Smart contracts for Universal Router",
   "license": "GPL-2.0-or-later",
   "publishConfig": {

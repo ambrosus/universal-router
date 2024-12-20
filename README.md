@@ -183,7 +183,7 @@ forge test
 ```
 ## Integrating
 
-1. Install the latest version of `@airdao/universal-router` package.
+1. Install the latest version of `@airdao/astra-universal-router` package.
 2. Add git submodules for contracts that aren't a node package. Make sure there's an empty `.gitmodules` file. Then run:
     ```bash
       git submodule add https://github.com/transmissions11/solmate
