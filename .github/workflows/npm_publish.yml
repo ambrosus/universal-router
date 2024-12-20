@@ -24,6 +24,8 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+      - run: forge install
+      - run: yarn symlink
       - run: yarn compile
       - run: yarn publish --access public
         env:
