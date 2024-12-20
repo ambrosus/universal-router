@@ -1,8 +1,8 @@
 import JSBI from 'jsbi'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import { BigintIsh, CurrencyAmount, Token } from '@airdao/astra-sdk-core'
-import { Pair } from '@airdao/astra-classic-sdk'
-import { encodeSqrtRatioX96, FeeAmount, nearestUsableTick, Pool, TickMath, TICK_SPACINGS } from '@airdao/astra-cl-sdk'
+import { BigintIsh, CurrencyAmount, Token } from 'astra-sdk-core'
+import { Pair } from 'astra-classic-sdk'
+import { encodeSqrtRatioX96, FeeAmount, nearestUsableTick, Pool, TickMath, TICK_SPACINGS } from 'astra-cl-sdk-dev'
 import { getClassicPoolReserves, SAMB, KOS, USDC, BOND } from './testnetForkHelpers'
 import { BigNumber } from 'ethers'
 

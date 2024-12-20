@@ -8,7 +8,6 @@ import {
   ISAMB__factory,
   ERC20__factory,
 } from '../../../typechain'
-import { abi as TOKEN_ABI } from '../../../artifacts/solmate/src/tokens/ERC20.sol/ERC20.json'
 import { resetFork, BOND, SAMB } from '../shared/testnetForkHelpers'
 import { ALICE_ADDRESS, DEADLINE, AMB_ADDRESS, ONE_PERCENT_BIPS } from '../shared/constants'
 import { expandTo18DecimalsBN } from '../shared/helpers'
@@ -18,10 +17,8 @@ import deployUniversalRouter, { deployPermit2 } from '../shared/deployUniversalR
 import { RoutePlanner, CommandType } from '../shared/planner'
 import snapshotGasCost from '@uniswap/snapshot-gas-cost'
 const { ethers } = hre
-import SAMB_ABI from '../../../artifacts/contracts/interfaces/external/ISAMB.sol/ISAMB.json'
 import { BigNumber } from 'ethers'
-import { ADDRESS_THIS } from '@airdao/astra-router-sdk'
-import { Token } from '@airdao/astra-sdk-core'
+import { ADDRESS_THIS } from 'astra-router-sdk'
 
 describe('Payments Gas Tests', () => {
   let alice: SignerWithAddress

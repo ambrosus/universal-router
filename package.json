@@ -36,10 +36,10 @@
     "@openzeppelin/contracts": "4.7.0"
   },
   "devDependencies": {
-    "@airdao/astra-cl-sdk": "npm:astra-cl-sdk-dev@^0.1.7",
-    "@airdao/astra-classic-sdk": "npm:astra-classic-sdk@^0.1.5",
-    "@airdao/astra-router-sdk": "npm:astra-router-sdk@^0.1.8",
-    "@airdao/astra-sdk-core": "npm:astra-sdk-core@^0.1.4",
+    "astra-cl-sdk-dev": "^0.1.7",
+    "astra-classic-sdk": "^0.1.5",
+    "astra-router-sdk": "^0.1.8",
+    "astra-sdk-core": "^0.1.4",
     "@nomicfoundation/hardhat-chai-matchers": "1.0.4",
     "@nomicfoundation/hardhat-foundry": "^1.1.3",
     "@nomiclabs/hardhat-ethers": "^2.2.2",

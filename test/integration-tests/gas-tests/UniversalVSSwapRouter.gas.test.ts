@@ -1,9 +1,8 @@
-import { encodeSqrtRatioX96, FeeAmount, Pool, TickMath } from '@airdao/astra-cl-sdk'
-import { Pair, Route as ClassicRouteSDK } from '@airdao/astra-classic-sdk'
-import { Route as CLRouteSDK } from '@airdao/astra-cl-sdk'
+import { encodeSqrtRatioX96, FeeAmount, Pool, TickMath, Route as CLRouteSDK } from 'astra-cl-sdk-dev'
+import { Pair, Route as ClassicRouteSDK } from 'astra-classic-sdk'
 import { encodePath, expandTo18Decimals } from '../shared/swapRouter02Helpers'
 import { BigNumber } from 'ethers'
-import { SwapRouter } from '@airdao/astra-router-sdk'
+import { SwapRouter } from 'astra-router-sdk'
 import {
   executeSwapRouter02Swap,
   resetFork,
@@ -21,9 +20,9 @@ import { RoutePlanner, CommandType } from '../shared/planner'
 import hre from 'hardhat'
 import { UniversalRouter, Permit2, ERC20__factory, ERC20 } from '../../../typechain'
 import { getPermitSignature, PermitSingle } from '../shared/protocolHelpers/permit2'
-import { CurrencyAmount, Percent, Token, TradeType } from '@airdao/astra-sdk-core'
+import { CurrencyAmount, Percent, Token, TradeType } from 'astra-sdk-core'
 import snapshotGasCost from '@uniswap/snapshot-gas-cost'
-import { IRoute, Trade } from '@airdao/astra-router-sdk'
+import { IRoute, Trade } from 'astra-router-sdk'
 const { ethers } = hre
 
 describe('Astra UX Tests gas:', () => {

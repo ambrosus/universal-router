@@ -1,6 +1,6 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { Pair } from '@airdao/astra-classic-sdk'
-import { FeeAmount } from '@airdao/astra-cl-sdk'
+import { Pair } from 'astra-classic-sdk'
+import { FeeAmount } from 'astra-cl-sdk-dev'
 import { parseEvents, CLASSIC_EVENTS, CL_EVENTS } from './shared/parseEvents'
 import { expect } from './shared/expect'
 import { encodePath } from './shared/swapRouter02Helpers'

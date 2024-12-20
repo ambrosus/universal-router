@@ -1,17 +1,16 @@
 import { UniversalRouter, Permit2, ISAMB, ERC20, MintableERC20__factory, ISAMB__factory } from '../../../typechain'
 import { expect } from '../shared/expect'
-import { ALICE_ADDRESS, ADDRESS_THIS, DEADLINE, MAX_UINT, MAX_UINT160, SOURCE_MSG_SENDER } from '../shared/constants'
+import { ALICE_ADDRESS } from '../shared/constants'
 import { abi as TOKEN_ABI } from '../../../artifacts/solmate/src/tokens/ERC20.sol/ERC20.json'
 import { abi as SAMB_ABI } from '../../../artifacts/contracts/interfaces/external/ISAMB.sol/ISAMB.json'
-import snapshotGasCost from '@uniswap/snapshot-gas-cost'
-import { resetFork, SAMB, BOND } from '../shared/testnetForkHelpers'
+import { resetFork, SAMB } from '../shared/testnetForkHelpers'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import hre from 'hardhat'
 import { expandTo18DecimalsBN } from '../shared/helpers'
 import deployUniversalRouter, { deployPermit2 } from '../shared/deployUniversalRouter'
-import { RoutePlanner, CommandType } from '../shared/planner'
+import { RoutePlanner } from '../shared/planner'
 import { BigNumber } from 'ethers'
-import { Token } from '@airdao/astra-sdk-core'
+import { Token } from 'astra-sdk-core'
 
 const { ethers } = hre
 

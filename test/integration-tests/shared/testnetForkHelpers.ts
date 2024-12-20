@@ -1,13 +1,13 @@
 import { ERC20, ERC20__factory } from '../../../typechain'
 // TODO: use imports from @airdao scoped contracts
 import { abi as CLASSIC_PAIR_ABI } from '@airdao/astra-contracts/artifacts/contracts/core/interfaces/IAstraPair.sol/IAstraPair.json'
-import { Currency, Token, SAMB as SAMBT } from '@airdao/astra-sdk-core'
+import { Currency, Token, SAMB as SAMBT } from 'astra-sdk-core'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { BigNumber, constants } from 'ethers'
 import hre from 'hardhat'
-import { MethodParameters } from '@airdao/astra-cl-sdk'
-import { Pair } from '@airdao/astra-classic-sdk'
+import { MethodParameters } from 'astra-cl-sdk-dev'
+import { Pair } from 'astra-classic-sdk'
 const { ethers } = hre
 
 export const SAMB = SAMBT[22040]
