@@ -19,6 +19,20 @@
     "@openzeppelin/contracts" "3.4.2-solc-0.7"
     base64-sol "1.0.1"
 
+"@airdao/astra-cl-sdk@npm:astra-cl-sdk-dev@^0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/astra-cl-sdk-dev/-/astra-cl-sdk-dev-0.1.7.tgz#19992a2fe0c2d253ec4a9735bfe6a776abf405d3"
+  integrity sha512-BuSy+oLtYY1m8WHAgcc/AGPZY3Reua1m8wWue25RovyyVCaUrrjEJXiospGL62t9yjPZOfYMmwabM8h8jANyPA==
+  dependencies:
+    "@airdao/astra-cl-periphery" "^1.0.0"
+    "@airdao/astra-cl-staker" "^1.0.0"
+    "@airdao/swap-router-contracts" "^1.0.0"
+    "@ethersproject/abi" "^5.5.0"
+    "@ethersproject/solidity" "^5.0.9"
+    astra-sdk-core "0.1.4"
+    tiny-invariant "^1.1.0"
+    tiny-warning "^1.0.3"
+
 "@airdao/astra-cl-staker@^1.0.0":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@airdao/astra-cl-staker/-/astra-cl-staker-1.0.2.tgz#36788849b9f671cd0fdc8156bc726d3afe3ea6f2"
@@ -28,6 +42,17 @@
     "@airdao/astra-cl-periphery" "^1.0.0"
     "@openzeppelin/contracts" "3.4.1-solc-0.7-2"
 
+"@airdao/astra-classic-sdk@npm:astra-classic-sdk@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/astra-classic-sdk/-/astra-classic-sdk-0.1.5.tgz#6ebbd2568fbf85bf17a9164dabc28fd0aad14d4c"
+  integrity sha512-2AE1VXY0xmwal8RQK3HaBRtBOdEejy+qHVJEgSuEWUXMNxMgF3rzn3xzxUD+Hn1tScHkB8z3hICOQHt60H21UA==
+  dependencies:
+    "@ethersproject/address" "^5.0.2"
+    "@ethersproject/solidity" "^5.0.9"
+    astra-sdk-core "0.1.4"
+    tiny-invariant "^1.1.0"
+    tiny-warning "^1.0.3"
+
 "@airdao/astra-contracts@^1.0.0", "@airdao/astra-contracts@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@airdao/astra-contracts/-/astra-contracts-1.0.2.tgz#c352424448ccf6c23e0af3cc2ec015fe265e9972"
@@ -35,6 +60,32 @@
   dependencies:
     "@openzeppelin/contracts" "2.5.1"
     dotenv "^16.4.5"
+
+"@airdao/astra-router-sdk@npm:astra-router-sdk@^0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/astra-router-sdk/-/astra-router-sdk-0.1.8.tgz#3753c91ffaaecdd9da28c0dbab861c4b10e0c616"
+  integrity sha512-JikMu0MrixfzF6mCJBuJPyASbOddeRvYEa2969usefGIMS6J1jv3ovcxXdM8cqDcgVb3Ntgiz8N4Fd4hpy6qDA==
+  dependencies:
+    "@airdao/swap-router-contracts" "1.0.0"
+    "@ethersproject/abi" "^5.5.0"
+    astra-cl-sdk-dev "0.1.7"
+    astra-classic-sdk "0.1.5"
+    astra-sdk-core "0.1.4"
+
+"@airdao/astra-sdk-core@npm:astra-sdk-core@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/astra-sdk-core/-/astra-sdk-core-0.1.4.tgz#07d0bc462ef6e5cec896a2d4633efbdbd4aa91f6"
+  integrity sha512-73Tvjc+F7E88g88FR19Ql3YnHWymSbTbr5WMjXek6dU5Dm8p2zQw9Gz24vgvNo2naPnA62eHvdi9tMXsi6GZ7w==
+  dependencies:
+    "@ethersproject/address" "^5.0.2"
+    "@ethersproject/bytes" "^5.7.0"
+    "@ethersproject/keccak256" "5.7.0"
+    "@ethersproject/strings" "5.7.0"
+    big.js "^5.2.2"
+    decimal.js-light "^2.5.0"
+    jsbi "^3.1.4"
+    tiny-invariant "^1.1.0"
+    toformat "^2.0.0"
 
 "@airdao/swap-router-contracts@1.0.0":
   version "1.0.0"
@@ -1340,7 +1391,7 @@ assertion-error@^1.1.0:
   resolved "https://registry.yarnpkg.com/assertion-error/-/assertion-error-1.1.0.tgz#e60b6b0e8f301bd97e5375215bda406c85118c0b"
   integrity sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==
 
-astra-cl-sdk-dev@0.1.7, astra-cl-sdk-dev@^0.1.7:
+astra-cl-sdk-dev@0.1.7:
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/astra-cl-sdk-dev/-/astra-cl-sdk-dev-0.1.7.tgz#19992a2fe0c2d253ec4a9735bfe6a776abf405d3"
   integrity sha512-BuSy+oLtYY1m8WHAgcc/AGPZY3Reua1m8wWue25RovyyVCaUrrjEJXiospGL62t9yjPZOfYMmwabM8h8jANyPA==
@@ -1354,7 +1405,7 @@ astra-cl-sdk-dev@0.1.7, astra-cl-sdk-dev@^0.1.7:
     tiny-invariant "^1.1.0"
     tiny-warning "^1.0.3"
 
-astra-classic-sdk@0.1.5, astra-classic-sdk@^0.1.5:
+astra-classic-sdk@0.1.5:
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/astra-classic-sdk/-/astra-classic-sdk-0.1.5.tgz#6ebbd2568fbf85bf17a9164dabc28fd0aad14d4c"
   integrity sha512-2AE1VXY0xmwal8RQK3HaBRtBOdEejy+qHVJEgSuEWUXMNxMgF3rzn3xzxUD+Hn1tScHkB8z3hICOQHt60H21UA==
@@ -1365,18 +1416,7 @@ astra-classic-sdk@0.1.5, astra-classic-sdk@^0.1.5:
     tiny-invariant "^1.1.0"
     tiny-warning "^1.0.3"
 
-astra-router-sdk@^0.1.8:
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/astra-router-sdk/-/astra-router-sdk-0.1.8.tgz#3753c91ffaaecdd9da28c0dbab861c4b10e0c616"
-  integrity sha512-JikMu0MrixfzF6mCJBuJPyASbOddeRvYEa2969usefGIMS6J1jv3ovcxXdM8cqDcgVb3Ntgiz8N4Fd4hpy6qDA==
-  dependencies:
-    "@airdao/swap-router-contracts" "1.0.0"
-    "@ethersproject/abi" "^5.5.0"
-    astra-cl-sdk-dev "0.1.7"
-    astra-classic-sdk "0.1.5"
-    astra-sdk-core "0.1.4"
-
-astra-sdk-core@0.1.4, astra-sdk-core@^0.1.4:
+astra-sdk-core@0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/astra-sdk-core/-/astra-sdk-core-0.1.4.tgz#07d0bc462ef6e5cec896a2d4633efbdbd4aa91f6"
   integrity sha512-73Tvjc+F7E88g88FR19Ql3YnHWymSbTbr5WMjXek6dU5Dm8p2zQw9Gz24vgvNo2naPnA62eHvdi9tMXsi6GZ7w==

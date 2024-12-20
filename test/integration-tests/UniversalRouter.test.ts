@@ -9,7 +9,7 @@ import {
   ISAMB__factory,
 } from '../../typechain'
 import { BigNumber, BigNumberish } from 'ethers'
-import { Pair } from 'astra-classic-sdk'
+import { Pair } from '@airdao/astra-classic-sdk'
 import { expect } from './shared/expect'
 import { abi as ROUTER_ABI } from '../../artifacts/contracts/UniversalRouter.sol/UniversalRouter.json'
 import { abi as TOKEN_ABI } from '../../artifacts/solmate/src/tokens/ERC20.sol/ERC20.json'
@@ -34,6 +34,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expandTo18DecimalsBN } from './shared/helpers'
 import hre from 'hardhat'
 import { findCustomErrorSelector } from './shared/parseEvents'
+import { Token } from '@airdao/astra-sdk-core'
 
 const { ethers } = hre
 const routerInterface = new ethers.utils.Interface(ROUTER_ABI)

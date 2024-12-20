@@ -18,7 +18,7 @@ import { RoutePlanner, CommandType } from '../shared/planner'
 import snapshotGasCost from '@uniswap/snapshot-gas-cost'
 const { ethers } = hre
 import { BigNumber } from 'ethers'
-import { ADDRESS_THIS } from 'astra-router-sdk'
+import { ADDRESS_THIS } from '@airdao/astra-router-sdk'
 
 describe('Payments Gas Tests', () => {
   let alice: SignerWithAddress

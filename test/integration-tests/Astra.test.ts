@@ -1,6 +1,6 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { Pair } from 'astra-classic-sdk'
-import { FeeAmount } from 'astra-cl-sdk-dev'
+import { Pair } from '@airdao/astra-classic-sdk'
+import { FeeAmount } from '@airdao/astra-cl-sdk'
 import { parseEvents, CLASSIC_EVENTS, CL_EVENTS } from './shared/parseEvents'
 import { expect } from './shared/expect'
 import { encodePath } from './shared/swapRouter02Helpers'
@@ -559,11 +559,11 @@ describe('Astra Classic and CL Tests:', () => {
         addCLExactInTrades(planner, 1, amountOutMin, ADDRESS_THIS)
         planner.addCommand(CommandType.UNWRAP_SAMB, [MSG_SENDER, 0])
 
-        const { ethBalanceBefore, ethBalanceAfter, clSwapEventArgs, gasSpent } = await executeRouter(planner)
+        const { ambBalanceBefore, ambBalanceAfter, clSwapEventArgs, gasSpent } = await executeRouter(planner)
         const { amount1: sambTraded } = clSwapEventArgs!
 
-        expect(ethBalanceAfter.sub(ethBalanceBefore)).to.be.gte(amountOutMin.sub(gasSpent))
-        expect(ethBalanceAfter.sub(ethBalanceBefore)).to.eq(sambTraded.mul(-1).sub(gasSpent))
+        expect(ambBalanceAfter.sub(ambBalanceBefore)).to.be.gte(amountOutMin.sub(gasSpent))
+        expect(ambBalanceAfter.sub(ambBalanceBefore)).to.eq(sambTraded.mul(-1).sub(gasSpent))
       })
 
       it('completes a CL exactOut swap', async () => {
@@ -580,9 +580,9 @@ describe('Astra Classic and CL Tests:', () => {
         ])
         planner.addCommand(CommandType.UNWRAP_SAMB, [MSG_SENDER, amountOut])
 
-        const { ethBalanceBefore, ethBalanceAfter, gasSpent } = await executeRouter(planner)
+        const { ambBalanceBefore, ambBalanceAfter, gasSpent } = await executeRouter(planner)
 
-        expect(ethBalanceAfter.sub(ethBalanceBefore)).to.eq(amountOut.sub(gasSpent))
+        expect(ambBalanceAfter.sub(ambBalanceBefore)).to.eq(amountOut.sub(gasSpent))
       })
     })
 
@@ -594,10 +594,10 @@ describe('Astra Classic and CL Tests:', () => {
         planner.addCommand(CommandType.WRAP_AMB, [ADDRESS_THIS, amountIn])
         addCLExactInTrades(planner, 1, amountOutMin, MSG_SENDER, tokens, SOURCE_ROUTER)
 
-        const { ethBalanceBefore, ethBalanceAfter, bondBalanceBefore, bondBalanceAfter, gasSpent } =
+        const { ambBalanceBefore, ambBalanceAfter, bondBalanceBefore, bondBalanceAfter, gasSpent } =
           await executeRouter(planner, amountIn)
 
-        expect(ethBalanceBefore.sub(ethBalanceAfter)).to.eq(amountIn.add(gasSpent))
+        expect(ambBalanceBefore.sub(ambBalanceAfter)).to.eq(amountIn.add(gasSpent))
         expect(bondBalanceAfter.sub(bondBalanceBefore)).to.be.gte(amountOutMin)
       })
 
@@ -609,12 +609,12 @@ describe('Astra Classic and CL Tests:', () => {
         planner.addCommand(CommandType.CL_SWAP_EXACT_OUT, [MSG_SENDER, amountOut, amountInMax, path, SOURCE_ROUTER])
         planner.addCommand(CommandType.UNWRAP_SAMB, [MSG_SENDER, 0])
 
-        const { ethBalanceBefore, ethBalanceAfter, bondBalanceBefore, bondBalanceAfter, gasSpent, clSwapEventArgs } =
+        const { ambBalanceBefore, ambBalanceAfter, bondBalanceBefore, bondBalanceAfter, gasSpent, clSwapEventArgs } =
           await executeRouter(planner, amountInMax)
         const { amount0: bondTraded, amount1: sambTraded } = clSwapEventArgs!
 
         expect(bondBalanceBefore.sub(bondBalanceAfter)).to.eq(bondTraded)
-        expect(ethBalanceBefore.sub(ethBalanceAfter)).to.eq(sambTraded.add(gasSpent))
+        expect(ambBalanceBefore.sub(ambBalanceAfter)).to.eq(sambTraded.add(gasSpent))
       })
     })
   })
@@ -990,13 +990,13 @@ describe('Astra Classic and CL Tests:', () => {
         // aggregate slippage check
         planner.addCommand(CommandType.UNWRAP_SAMB, [MSG_SENDER, expandTo18DecimalsBN(0.0005)])
 
-        const { ethBalanceBefore, ethBalanceAfter, gasSpent, classicSwapEventArgs, clSwapEventArgs } =
+        const { ambBalanceBefore, ambBalanceAfter, gasSpent, classicSwapEventArgs, clSwapEventArgs } =
           await executeRouter(planner)
         const { amount1Out: sambOutClassic } = classicSwapEventArgs!
         let { amount1: sambOutCL } = clSwapEventArgs!
         sambOutCL = sambOutCL.mul(-1)
 
-        expect(ethBalanceAfter.sub(ethBalanceBefore)).to.eq(sambOutClassic.add(sambOutCL).sub(gasSpent))
+        expect(ambBalanceAfter.sub(ambBalanceBefore)).to.eq(sambOutClassic.add(sambOutCL).sub(gasSpent))
       })
 
       it('ERC20 --> AMB split Classic and CL, exactOut, one hop', async () => {
@@ -1024,10 +1024,10 @@ describe('Astra Classic and CL Tests:', () => {
         // aggregate slippage check
         planner.addCommand(CommandType.UNWRAP_SAMB, [MSG_SENDER, fullAmountOut])
 
-        const { ethBalanceBefore, ethBalanceAfter, gasSpent } = await executeRouter(planner)
+        const { ambBalanceBefore, ambBalanceAfter, gasSpent } = await executeRouter(planner)
 
         // TODO: permit2 test alice doesn't send more than maxAmountIn BOND
-        expect(ethBalanceAfter.sub(ethBalanceBefore)).to.eq(fullAmountOut.sub(gasSpent))
+        expect(ambBalanceAfter.sub(ambBalanceBefore)).to.eq(fullAmountOut.sub(gasSpent))
       })
 
       describe('Batch reverts', () => {
