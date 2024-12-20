@@ -20,6 +20,8 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           scope: '@airdao'
           cache: 'yarn'
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - run: yarn compile
