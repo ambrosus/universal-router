@@ -48,8 +48,8 @@ describe('Payments Gas Tests', () => {
       await MintableERC20__factory.connect(BOND.address, alice).transfer(bob.address, expandTo18DecimalsBN(100000000))
     ).wait()
     await (await ISAMB__factory.connect(SAMB.address, alice).deposit({ value: expandTo18DecimalsBN(1000) })).wait()
-    await(await ISAMB__factory.connect(SAMB.address, bob).deposit({ value: expandTo18DecimalsBN(1000) })).wait()
-    
+    await (await ISAMB__factory.connect(SAMB.address, bob).deposit({ value: expandTo18DecimalsBN(1000) })).wait()
+
     bondContract = ERC20__factory.connect(BOND.address, bob)
     sambContract = ISAMB__factory.connect(SAMB.address, bob)
 

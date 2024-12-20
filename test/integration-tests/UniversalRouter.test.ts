@@ -64,7 +64,7 @@ describe('UniversalRouter', () => {
     // mock rewards contracts
     const tokenFactory = await ethers.getContractFactory('MintableERC20')
     const mockDistributorFactory = await ethers.getContractFactory('MockLooksRareRewardsDistributor')
-    mockLooksRareToken = (await tokenFactory.connect(alice).deploy("LooksRare", "LR", expandTo18DecimalsBN(5))) as ERC20
+    mockLooksRareToken = (await tokenFactory.connect(alice).deploy('LooksRare', 'LR', expandTo18DecimalsBN(5))) as ERC20
     mockLooksRareRewardsDistributor = (await mockDistributorFactory.deploy(
       ROUTER_REWARDS_DISTRIBUTOR,
       mockLooksRareToken.address

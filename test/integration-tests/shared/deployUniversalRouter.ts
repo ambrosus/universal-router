@@ -7,7 +7,7 @@ import {
   CLASSIC_INIT_CODE_HASH_TESTNET,
   CL_INIT_CODE_HASH_TESTNET,
   ROUTER_REWARDS_DISTRIBUTOR,
-  UNSUPPORTED_PROTOCOL
+  UNSUPPORTED_PROTOCOL,
 } from './constants'
 
 export async function deployRouter(

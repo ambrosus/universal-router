@@ -1,13 +1,6 @@
 import { UniversalRouter, Permit2, ISAMB, ERC20, MintableERC20__factory, ISAMB__factory } from '../../../typechain'
 import { expect } from '../shared/expect'
-import {
-  ALICE_ADDRESS,
-  ADDRESS_THIS,
-  DEADLINE,
-  MAX_UINT,
-  MAX_UINT160,
-  SOURCE_MSG_SENDER,
-} from '../shared/constants'
+import { ALICE_ADDRESS, ADDRESS_THIS, DEADLINE, MAX_UINT, MAX_UINT160, SOURCE_MSG_SENDER } from '../shared/constants'
 import { abi as TOKEN_ABI } from '../../../artifacts/solmate/src/tokens/ERC20.sol/ERC20.json'
 import { abi as SAMB_ABI } from '../../../artifacts/contracts/interfaces/external/ISAMB.sol/ISAMB.json'
 import snapshotGasCost from '@uniswap/snapshot-gas-cost'
@@ -31,7 +24,11 @@ describe('UniversalRouter Gas Tests', () => {
   let sambContract: ISAMB
 
   async function deployMintableToken(name: string, symbol: string, signer: SignerWithAddress): Promise<Token> {
-    const token = await new MintableERC20__factory(signer).deploy(name, symbol, BigNumber.from(10).pow(18).mul('1000000000000000000'))
+    const token = await new MintableERC20__factory(signer).deploy(
+      name,
+      symbol,
+      BigNumber.from(10).pow(18).mul('1000000000000000000')
+    )
     return new Token(22040, token.address, 18, name, symbol)
   }
 

@@ -5,14 +5,7 @@ import { parseEvents, CLASSIC_EVENTS, CL_EVENTS } from './shared/parseEvents'
 import { expect } from './shared/expect'
 import { encodePath } from './shared/swapRouter02Helpers'
 import { BigNumber, BigNumberish, Contract } from 'ethers'
-import {
-  ERC20,
-  ERC20__factory,
-  ISAMB,
-  ISAMB__factory,
-  Permit2,
-  UniversalRouter,
-} from '../../typechain'
+import { ERC20, ERC20__factory, ISAMB, ISAMB__factory, Permit2, UniversalRouter } from '../../typechain'
 import { BOND, KOS, resetFork, SAMB, USDC } from './shared/testnetForkHelpers'
 import {
   ADDRESS_THIS,
@@ -365,7 +358,7 @@ describe('Astra Classic and CL Tests:', () => {
 
         const { gasSpent, ambBalanceBefore, ambBalanceAfter, classicSwapEventArgs } = await executeRouter(planner)
         const { amount0Out: sambTraded } = classicSwapEventArgs!
-        
+
         expect(ambBalanceAfter.sub(ambBalanceBefore)).to.eq(sambTraded.sub(gasSpent))
       })
 
@@ -1297,7 +1290,7 @@ describe('Astra Classic and CL Tests:', () => {
     const sambBalanceBefore: BigNumber = await sambContract.balanceOf(bob.address)
     const usdcBalanceBefore: BigNumber = await usdcContract.balanceOf(bob.address)
     const bondBalanceBefore: BigNumber = await bondContract.balanceOf(bob.address)
-    
+
     const { commands, inputs } = planner
     const tx = await router['execute(bytes,bytes[],uint256)'](commands, inputs, DEADLINE, { value })
     const receipt = await tx.wait()

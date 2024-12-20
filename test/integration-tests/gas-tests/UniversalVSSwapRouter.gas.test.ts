@@ -40,7 +40,7 @@ describe('Astra UX Tests gas:', () => {
   let MAX_PERMIT: PermitSingle
   let SIMPLE_SWAP_PERMIT: PermitSingle
   let COMPLEX_SWAP_PERMIT: PermitSingle
-  
+
   beforeEach(async () => {
     await resetFork()
     await hre.network.provider.request({
